@@ -1,0 +1,77 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+/*
+ * Width of the page content: the full width less 16px on each side, and at most
+ * --container-page wide, centred on wide screens.
+ */
+@utility page-container {
+  width: min(100% - 32px, var(--container-page));
+  margin-inline: auto;
+}
+
+/* Vertical padding of a page section: 64px, and 96px from 1024px. */
+@utility section-padding {
+  padding-block: 64px;
+
+  @variant lg {
+    padding-block: 96px;
+  }
+}
+
+@layer base {
+  html {
+    /*
+     * Room for the sticky header (64px plus its 1px bottom border): whenever the page scrolls
+     * something into view, it keeps it out of the top 80px of the window, below the header instead
+     * of under it. That covers the target of an in-page link (#prices, #contact) and any element
+     * that gets keyboard focus with Tab or Shift+Tab. Set once here, on the element that scrolls
+     * (lesson G-023); do not give the targets a top scroll margin as well, the two add up.
+     */
+    scroll-padding-top: 80px;
+
+    /* Glide to a section after a click on an in-page link, unless the visitor asked for less motion. */
+    @media (prefers-reduced-motion: no-preference) {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* The page behind the open mobile menu does not scroll (SiteHeader, useMobileMenu). */
+  html.menu-open {
+    @variant max-lg {
+      overflow: hidden;
+    }
+  }
+
+  body {
+    background-color: var(--color-white);
+    color: var(--color-harbor-navy);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.7;
+  }
+
+  /*
+   * Headings use the medium weight (500). Only 400 and 500 of the Thai font are downloaded
+   * (site.ts), so a bold heading would be drawn as a fake bold by the browser.
+   */
+  h1,
+  h2,
+  h3 {
+    font-weight: 500;
+    line-height: 1.35;
+  }
+
+  a {
+    color: var(--color-harbor-navy);
+  }
+
+  /*
+   * Visible keyboard focus on everything that can be focused: navy on light backgrounds. Sections
+   * with a navy background switch the ring to orange (brand.md: orange is not readable on white).
+   */
+  :focus-visible {
+    outline: 3px solid var(--color-harbor-navy);
+    outline-offset: 3px;
+  }
+}

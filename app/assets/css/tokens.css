@@ -1,0 +1,63 @@
+/*
+ * Design tokens: the only place for colours, fonts, corner radii and shadows. The colours and fonts
+ * are Approdo's, from its brand file (Demo-story/_brand/approdo/brand.md "## สี" and "## ฟอนต์");
+ * the names are the ones of the chosen design (Demo-story/Brand-site/design/BR-001/b.html).
+ *
+ * Each token becomes a Tailwind utility (bg-harbor-navy, text-shore-cream, rounded-md, shadow-card,
+ * font-display, ...) and a CSS variable (var(--color-harbor-navy)). `static` keeps every variable in
+ * the output even when no utility uses it, and `--color-*: initial` removes Tailwind's default palette,
+ * so colours outside this file cannot be used by accident. Lighter text and lines are these colours
+ * with opacity (text-harbor-navy/78, border-harbor-navy/14), never new colours.
+ *
+ * Colours are written as #rrggbb: the brand-images script and the contrast test
+ * (tests/unit/tokens.test.ts) read them from this file.
+ *
+ * Contrast of text on its background (WCAG 2.x; normal text needs 4.5:1, large text and the focus
+ * ring 3:1). `npm run test:unit` checks these pairs again:
+ *
+ *   harbor-navy        on white 15.29:1   on shore-cream 12.82:1   (text, focus ring on light backgrounds)
+ *   harbor-navy 78%    on white  7.60:1   on shore-cream  6.84:1   (secondary text)
+ *   harbor-navy        on beacon-orange 6.52:1                     (the LINE buttons)
+ *   white              on harbor-navy 15.29:1
+ *   shore-cream        on harbor-navy 12.82:1   on harbor-navy-deep 14.43:1
+ *   beacon-orange      on harbor-navy  6.52:1   on harbor-navy-deep  7.34:1   (text and focus ring on navy)
+ *
+ *   Never beacon-orange text or focus ring on white (2.35:1) or shore-cream (1.97:1): orange is for
+ *   buttons, lines and dots on light backgrounds (brand.md, decision D-003).
+ */
+@theme static {
+  --color-*: initial;
+
+  /* Harbor Navy and its gradient ends (#22366A -> #0F1A35) */
+  --color-harbor-navy: #16234A;
+  --color-harbor-navy-light: #22366A;
+  --color-harbor-navy-deep: #0F1A35;
+
+  /* Beacon Orange: buttons, waves, dots */
+  --color-beacon-orange: #FF8A3D;
+
+  /* Shore Cream: light backgrounds, secondary text on navy */
+  --color-shore-cream: #FFE7D1;
+
+  --color-white: #FFFFFF;
+
+  /*
+   * IBM Plex Sans Thai (400 / 500) for all text; Outfit (600) for the wordmark and Latin display text
+   * such as section numbers and scores. @nuxt/fonts finds both here, downloads them at build time and
+   * serves them from this site (no request to Google Fonts from the visitor's browser). The weights it
+   * downloads are `fontWeights` in app/data/site.ts.
+   */
+  --font-sans: "IBM Plex Sans Thai", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", "IBM Plex Sans Thai", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+
+  --shadow-ticket: 0 24px 48px -20px rgb(15 26 53 / 0.45);
+  --shadow-card: 0 1px 0 rgb(22 35 74 / 0.14), 0 18px 36px -24px rgb(15 26 53 / 0.35);
+  --shadow-device: 0 16px 32px -18px rgb(15 26 53 / 0.5);
+
+  /* Widest content box; page-container (main.css) keeps 16px free on each side below it. */
+  --container-page: 1116px;
+}

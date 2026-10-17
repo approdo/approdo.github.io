@@ -1,0 +1,43 @@
+{
+  "skipLink": "ข้ามไปเนื้อหาหลัก",
+  "newTab": "(เปิดในแท็บใหม่)",
+  "header": {
+    "navLabel": "เมนูหลัก",
+    "menuButton": "เมนู"
+  },
+  "nav": {
+    "work": "ผลงาน",
+    "pricing": "บริการและราคา",
+    "process": "ขั้นตอน",
+    "faq": "คำถาม",
+    "contact": "ติดต่อ"
+  },
+  "line": {
+    "chat": "ทักไลน์",
+    "quote": "ทักไลน์ให้ประเมินราคา",
+    "addFriend": "เพิ่มเพื่อน / ทักไลน์"
+  },
+  "hero": {
+    "seeWork": "ดูผลงาน"
+  },
+  "work": {
+    "open": "เปิดดูเว็บ",
+    "scoresLabel": "คะแนน {tool}",
+    "measuredOn": "วัด {date}",
+    "score": {
+      "performance": "Performance",
+      "accessibility": "Accessibility",
+      "bestPractices": "Best Practices",
+      "seo": "SEO"
+    }
+  },
+  "pricing": {
+    "duration": "ระยะเวลา"
+  },
+  "contact": {
+    "account": "LINE OA:"
+  },
+  "footer": {
+    "lineLink": "LINE OA: {name} ({id})"
+  }
+}
