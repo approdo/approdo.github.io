@@ -14,8 +14,11 @@ import type { Site } from '../types/content'
  */
 export const site: Site = {
   name: 'Approdo',
-  // Phrases of brand.md: the tagline, then the services line.
-  description: 'พาธุรกิจขึ้นฝั่งออนไลน์ — ออกแบบและพัฒนาเว็บไซต์ทุกรูปแบบ · รองรับมือถือ โหลดไว',
+  // Search results and link previews show these two together, so they do not repeat each other. Both
+  // are phrases of brand.md, word for word: the title is the LINE OA name and the tagline, the
+  // description the services line and the end of the positioning line.
+  title: 'Approdo - รับทำเว็บ | พาธุรกิจขึ้นฝั่งออนไลน์',
+  description: 'ออกแบบและพัฒนาเว็บไซต์ทุกรูปแบบ · รองรับมือถือ โหลดไว — มีเว็บหน้าเดียว เว็บหลายหน้า และระบบเฉพาะงาน',
 
   // The organisation's main GitHub Pages site (repository approdo/approdo.github.io), served at the
   // root of the domain: the base path is '/' (decision D-002). The canonical, og:url and og:image links

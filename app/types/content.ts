@@ -34,8 +34,10 @@ export interface LineAccount {
 }
 
 export interface Site {
-  /** Brand name: header, footer, page title and link preview. */
+  /** Brand name: header, footer, link preview and the og-image.png made by `npm run brand-images`. */
   name: string
+  /** The page's <title> and the title of the link preview (og:title). It starts with the brand name. */
+  title: string
   /** One or two sentences for search results and link previews (meta description). */
   description: string
   /**

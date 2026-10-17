@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { hero } from '~/data/hero'
 import { site } from '~/data/site'
+import { joinPhrases } from '~/utils/phrases'
 
 // <html lang>, the canonical link and og:url. All of them start with site.url.
 const i18nHead = useLocaleHead()
@@ -19,19 +21,20 @@ useHead(() => ({
   meta: i18nMeta.value,
 }))
 
-// Title, description and the link preview (made by `npm run brand-images`).
+// Title, description and the link preview. The preview image, og-image.png, is made by
+// `npm run brand-images` and shows the logo and the tagline, so its alt text is the two of them.
 // Open Graph needs an absolute URL; site.url already ends with the base path.
 useSeoMeta({
-  title: site.name,
+  title: site.title,
   description: site.description,
   ogType: 'website',
-  ogTitle: site.name,
+  ogTitle: site.title,
   ogDescription: site.description,
   ogSiteName: site.name,
   ogImage: `${site.url}og-image.png`,
   ogImageWidth: 1200,
   ogImageHeight: 630,
-  ogImageAlt: site.name,
+  ogImageAlt: `${site.name} — ${joinPhrases(hero.tagline)}`,
   twitterCard: 'summary_large_image',
 })
 </script>

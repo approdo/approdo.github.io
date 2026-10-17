@@ -9,8 +9,10 @@ import { readFontFamilies } from '../../scripts/lib/tokens'
 const tokensCss = readFileSync(new URL('../../app/assets/css/tokens.css', import.meta.url), 'utf8')
 
 describe('site.ts', () => {
-  it('has the brand name, a description and the © line', () => {
+  it('has the brand name, a title that starts with it, a description and the © line', () => {
     expect(site.name.trim()).not.toBe('')
+    expect(site.title.startsWith(site.name)).toBe(true)
+    expect(site.title.length).toBeGreaterThan(site.name.length)
     expect(site.description.trim()).not.toBe('')
     expect(site.copyright).toMatch(/^© \d{4} \S/)
   })

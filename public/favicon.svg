@@ -1,7 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Example Shop icon. Made by scripts/generate-brand-images.mjs: change the script or the tokens, not this file. -->
-  <rect width="32" height="32" rx="7" fill="#1b5e8c"/>
-  <path d="M7 9h18l-2 5H9z" fill="#ffffff"/>
-  <path d="M9 16h14v8H9z" fill="#ffffff"/>
-  <path d="M14 19h4v5h-4z" fill="#1b5e8c"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="640" height="640" xmlns:c2pa="http://c2pa.org/manifest">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="78%">
+      <stop offset="0" stop-color="#22366A"/>
+      <stop offset="1" stop-color="#0F1A35"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#FF9A4D" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#FF9A4D" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="640" height="640" fill="url(#bg)"/>
+  <g transform="translate(0 22)">
+    <!-- beacon light -->
+    <circle cx="320" cy="104" r="74" fill="url(#glow)"/>
+    <circle cx="320" cy="104" r="21" fill="#FF8A3D"/>
+    <!-- the A / harbor arch -->
+    <!-- wave crossbar -->
+    
+    <path d="M196 478 L320 180 L444 478" fill="none" stroke="#FFFFFF" stroke-width="56"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M236.5 380 Q 278 346 320 380 T 403.5 380" fill="none" stroke="#FF8A3D" stroke-width="30"
+          stroke-linecap="round"/>
+  </g>
 </svg>

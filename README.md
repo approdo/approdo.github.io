@@ -10,7 +10,7 @@
 
 | ไฟล์ | มีอะไร |
 |---|---|
-| `app/data/site.ts` | ชื่อ, คำอธิบาย, `url` ของเว็บ, LINE OA, บรรทัด ©, น้ำหนักฟอนต์ |
+| `app/data/site.ts` | ชื่อ, `title` + คำอธิบาย (ของ `<title>` / meta / ภาพตอนแชร์ลิงก์), `url` ของเว็บ, LINE OA, บรรทัด ©, น้ำหนักฟอนต์ |
 | `app/data/pricing.ts` | **ราคาและเงื่อนไขงานทั้งหมด — ไฟล์เดียว** ตรงตัวอักษร (hero / ขั้นตอน / คำถาม import จากไฟล์นี้) |
 | `app/data/hero.ts` | tagline, บริการ, ตำแหน่งแบรนด์ |
 | `app/data/portfolio.ts` | ผลงาน (เว็บตัวอย่างของแบรนด์สมมติ) + คะแนน PageSpeed Insights พร้อมวันที่วัด + alt ของภาพหน้าจอ |
@@ -18,6 +18,7 @@
 | `app/data/contact.ts`, `menu.ts` | หัวข้อส่วนติดต่อ / section ที่เมนูลิงก์ไป |
 | `app/assets/css/tokens.css` | สี (Harbor Navy, Beacon Orange, Shore Cream, White), ฟอนต์ (IBM Plex Sans Thai, Outfit), มุมโค้ง, เงา |
 | `public/images/brand/` | โลโก้ (ไฟล์จริงของแบรนด์ — ห้ามวาดใหม่) |
+| `public/favicon.svg`, `apple-touch-icon.png`, `og-image.png` | ไอคอนแท็บ (= `mark.svg`), ไอคอนหน้าจอมือถือ 180×180, ภาพตอนแชร์ลิงก์ 1200×630 (ตัว A + "Approdo" + tagline) — สร้างจากโลโก้ด้วย `npm run brand-images` ไม่แก้มือ |
 | `public/images/work/` | ภาพหน้าจอผลงาน (คอม + มือถือ, WebP) — สร้างด้วย `npm run capture-portfolio` |
 | `public/images/line-qr.svg` | QR เพิ่มเพื่อน LINE OA — สร้างจาก `site.ts` ด้วย `npm run qr` (`npm run generate` สร้างใหม่ทุกครั้ง) |
 | `i18n/locales/th.json` | ข้อความของปุ่ม / เมนู / ป้าย |
@@ -35,6 +36,7 @@
 | `npm run dev` | เปิดเว็บแบบแก้แล้วเห็นทันที |
 | `npm run generate` | สร้าง QR ใหม่จากลิงก์ LINE แล้ว build เป็นไฟล์ static ลง `.output/public` (ต้องมี internet — ดาวน์โหลดฟอนต์) |
 | `npm run qr` | สร้าง `public/images/line-qr.svg` จาก `site.line.url` (ไม่เรียกบริการ QR ภายนอก — หน้าเว็บโหลดไฟล์ของตัวเอง) |
+| `npm run brand-images` | สร้าง `favicon.svg` / `apple-touch-icon.png` / `og-image.png` จากไฟล์โลโก้ใน `public/images/brand/` + สี / ฟอนต์ใน `tokens.css` + tagline (Chromium ของ Playwright, ต้องมี internet — โหลดฟอนต์จาก Google Fonts) — รันใหม่เมื่อโลโก้ / สี / tagline เปลี่ยน แล้วดูภาพก่อน commit |
 | `npm run capture-portfolio` | ถ่ายภาพหน้าจอเว็บผลงานจาก URL ใน `portfolio.ts` (Chromium ของ Playwright, ปิด animation) → `public/images/work/` — รันใหม่เมื่อ URL เปลี่ยน แล้วดูภาพก่อน commit |
 | `npm run preview` | เปิดผล build ที่ `http://localhost:4177/` |
 | `npm run lint` / `npm run typecheck` | ตรวจรูปแบบโค้ด / type |
