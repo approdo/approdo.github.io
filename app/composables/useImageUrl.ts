@@ -1,11 +1,9 @@
-import type { ImageFile } from '~/types/content'
-
 /**
- * Returns a function that gives the URL of an image in public/images/.
- * Nuxt does not add the base path (e.g. '/Site-starter/') to files in public/, so it is joined here
- * (lesson G-020).
+ * Returns a function that gives the URL of a file in public/images/, e.g. imageUrl('line-qr.svg').
+ * Nuxt does not add the base path ('/' here, '/<repo>/' for a project site) to files in public/, so
+ * it is joined here (lesson G-020).
  */
 export function useImageUrl() {
   const { app } = useRuntimeConfig()
-  return (image: ImageFile) => `${app.baseURL}images/${image.file}`
+  return (file: string) => `${app.baseURL}images/${file}`
 }

@@ -7,6 +7,15 @@ import { newTabAttributes } from '~/utils/links'
  * page is this component, so all of them lead to the one link in site.ts. It opens in a new tab.
  * The visible label is the slot; screen readers also hear that the link opens a new tab.
  */
+withDefaults(defineProps<{
+  size?: 'md' | 'sm'
+  /** The button sits on a navy background (see BaseButton). */
+  onNavy?: boolean
+}>(), {
+  size: 'md',
+  onNavy: false,
+})
+
 const { t } = useI18n()
 </script>
 
@@ -14,8 +23,13 @@ const { t } = useI18n()
   <BaseButton
     :href="site.line.url"
     v-bind="newTabAttributes(site.line.url)"
+    :size="size"
+    :on-navy="onNavy"
   >
-    <IconLine class="size-5 shrink-0" />
+    <IconLine
+      class="shrink-0"
+      :class="size === 'sm' ? 'size-5' : 'size-5.5'"
+    />
     <slot />
     <span class="sr-only">{{ t('newTab') }}</span>
   </BaseButton>

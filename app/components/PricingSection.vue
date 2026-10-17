@@ -6,6 +6,9 @@ const { t } = useI18n()
 
 // Every price and term on this section comes from app/data/pricing.ts, word for word.
 const callToActionText = joinTexts([callToAction.ask, callToAction.reply])
+
+/** A price with an amount in it is large; a price that is quoted per job (no number) is a size smaller. */
+const hasAmount = (price: string) => /\d/.test(price)
 </script>
 
 <template>
@@ -18,33 +21,41 @@ const callToActionText = joinTexts([callToAction.ask, callToAction.reply])
       <SectionHead
         section="pricing"
         :content="pricingSection"
+        class="mb-8"
       />
-      <p class="inline-flex rounded-full bg-harbor-navy px-4 py-1.5 text-[15px] text-shore-cream">
+      <p class="mb-4.5 inline-flex items-center gap-2 rounded-full bg-harbor-navy px-3.5 py-1.5 text-[15px] font-medium text-white">
+        <span
+          class="size-2 shrink-0 rounded-full bg-beacon-orange"
+          aria-hidden="true"
+        />
         <PhraseText :text="launchOffer" />
       </p>
 
-      <!-- A card per package: one column, three from 1024px. -->
+      <!-- A card per package: one column, three from 1024px (three at 768px would be too narrow). -->
       <ul
         role="list"
-        class="mt-6 grid gap-4.5 lg:grid-cols-3"
+        class="grid gap-4.5 lg:grid-cols-3"
       >
         <li
           v-for="plan in plans"
           :key="plan.id"
-          class="rounded-lg border-t-6 border-beacon-orange bg-white p-6 shadow-card"
+          class="flex flex-col items-start gap-2 rounded-lg border-t-6 border-beacon-orange bg-white px-6 pt-6.5 pb-6 shadow-card"
         >
           <h3 class="text-[23px]">
             {{ plan.name }}
           </h3>
-          <p class="whitespace-nowrap text-harbor-navy/78">
+          <p class="-mt-1 text-[16px] whitespace-nowrap text-harbor-navy/78">
             {{ plan.detail }}
           </p>
-          <p class="mt-3 text-[32px] leading-[1.25] font-medium whitespace-nowrap">
+          <p
+            class="mt-2.5 leading-[1.25] font-medium"
+            :class="hasAmount(plan.price) ? 'text-[32px] whitespace-nowrap' : 'text-[25px]'"
+          >
             {{ plan.price }}
           </p>
           <p
             v-if="plan.duration"
-            class="mt-3 inline-flex items-center gap-2 rounded-full bg-harbor-navy px-3 py-1 text-[15px] text-shore-cream"
+            class="inline-flex items-center gap-1.5 rounded-full bg-harbor-navy px-3 py-1 text-[15px] font-medium text-shore-cream"
           >
             <IconClock class="size-4 shrink-0" />
             <span class="sr-only">{{ t('pricing.duration') }}</span>
@@ -53,34 +64,56 @@ const callToActionText = joinTexts([callToAction.ask, callToAction.reply])
         </li>
       </ul>
 
-      <div class="mt-6 rounded-md bg-white p-5">
-        <p class="font-medium">
+      <!-- "ทุกแบบ:" and what every package includes, each with an orange tick. -->
+      <div class="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2.5 rounded-md bg-white px-5.5 py-4.5">
+        <p
+          id="all-plans-label"
+          class="font-medium"
+        >
           {{ allPlans.label }}
         </p>
-        <TextLines :lines="allPlans.items" />
+        <ul
+          role="list"
+          class="flex flex-wrap gap-x-5.5 gap-y-2"
+          aria-labelledby="all-plans-label"
+        >
+          <li
+            v-for="(item, index) in allPlans.items"
+            :key="index"
+            class="inline-flex items-center gap-2"
+          >
+            <span class="grid size-6 shrink-0 place-items-center rounded-full bg-beacon-orange text-harbor-navy">
+              <IconCheck class="size-3.5" />
+            </span>
+            <PhraseText :text="item" />
+          </li>
+        </ul>
       </div>
 
-      <p class="mt-4 rounded-md bg-harbor-navy p-5 text-shore-cream">
+      <p class="on-navy mt-3.5 rounded-md bg-harbor-navy px-5.5 py-4 text-shore-cream">
         <strong class="font-medium text-beacon-orange">{{ launchTerms.label }}</strong>
         {{ ' ' }}
         <PhraseText :text="launchTerms.text" />
       </p>
 
       <!-- Terms of work from the owner's answers: one column, two from 1024px. -->
-      <div class="mt-4 grid gap-3.5 lg:grid-cols-2">
+      <div class="mt-3.5 grid gap-3.5 lg:grid-cols-2">
         <div
           v-for="box in termsBoxes"
           :key="box.id"
-          class="rounded-md bg-white p-5 text-harbor-navy/78"
+          class="rounded-md bg-white px-5.5 py-4.5 text-harbor-navy/78"
         >
-          <h3 class="mb-2 text-[18px] text-harbor-navy">
+          <h3 class="mb-1.5 text-[18px] text-harbor-navy">
             <PhraseText :text="box.heading" />
           </h3>
-          <TextLines :lines="box.lines" />
+          <TextLines
+            :lines="box.lines"
+            :bullets="box.bullets"
+          />
         </div>
       </div>
 
-      <div class="mt-8 flex flex-wrap items-center gap-4">
+      <div class="mt-7 flex flex-wrap items-center gap-x-5.5 gap-y-3.5">
         <p class="text-[19px] font-medium">
           <PhraseText :text="callToActionText" />
         </p>

@@ -147,11 +147,14 @@ export const termsBoxes: TermsBox[] = [
   {
     id: 'extra-cost',
     heading: 'ราคาเริ่มต้นเพิ่มเมื่อ',
+    // The cases, then the promise on a line of its own.
     lines: [terms.extraCost.cases, ['— ', ...terms.extraCost.quote]],
+    bullets: false,
   },
   {
     id: 'hosting',
     heading: 'ค่าโดเมน / hosting',
     lines: terms.hosting,
+    bullets: true,
   },
 ]

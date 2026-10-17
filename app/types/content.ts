@@ -68,14 +68,8 @@ export interface Site {
 export interface SectionHeading {
   heading: ThaiText
   intro?: ThaiText
-}
-
-/** An image file in public/images/, with its size in pixels (it keeps its space while it loads). */
-export interface ImageFile {
-  /** Path inside public/images/, e.g. 'brand/mark-on-light.svg'. */
-  file: string
-  width: number
-  height: number
+  /** Words of the intro shown in the display font, e.g. a product name: 'PageSpeed Insights'. */
+  accent?: string
 }
 
 /** app/data/hero.ts: the first screen of the page. */
@@ -107,11 +101,13 @@ export interface LabelledList {
   items: readonly ThaiText[]
 }
 
-/** A box of terms under the price list: a heading and one or more lines (several = a bulleted list). */
+/** A box of terms under the price list: a heading and its lines. */
 export interface TermsBox {
   id: string
   heading: ThaiText
   lines: readonly ThaiText[]
+  /** true: the lines are a bulleted list; false: each line is a paragraph of its own. */
+  bullets: boolean
 }
 
 /** app/data/process.ts: one step of the way Approdo works. */
@@ -140,6 +136,9 @@ export interface PageSpeedScores {
   seo: number
 }
 
+/** The two screenshots of a sample website: on a computer and on a phone. */
+export type ScreenshotView = 'desktop' | 'mobile'
+
 /** app/data/portfolio.ts: one website shown as Approdo's work. */
 export interface PortfolioItem {
   id: string
@@ -152,6 +151,11 @@ export interface PortfolioItem {
   description: string
   /** The live website; it opens in a new tab. */
   url: string
+  /**
+   * Alt texts of the two screenshots of the website (made by `npm run capture-portfolio`), which say
+   * that the brand is fictional.
+   */
+  screenshotAlt: Record<ScreenshotView, string>
   /** How the scores were measured. */
   measurement: {
     tool: string

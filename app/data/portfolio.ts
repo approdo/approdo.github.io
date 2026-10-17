@@ -1,8 +1,24 @@
-import type { PortfolioItem, SectionHeading } from '../types/content'
+import type { PortfolioItem, ScreenshotView, SectionHeading } from '../types/content'
 
 export const workSection: SectionHeading = {
   heading: 'ผลงาน',
-  intro: 'เปิดดูเว็บจริงได้ทั้งบนมือถือและคอม — คะแนนวัดด้วย PageSpeed Insights แบบมือถือ',
+  intro: ['เปิดดูเว็บจริง', 'ได้ทั้งบนมือถือ', 'และคอม — ', 'คะแนนวัดด้วย ', 'PageSpeed Insights ', 'แบบมือถือ'],
+  accent: 'PageSpeed Insights',
+}
+
+/**
+ * The screenshots of every website in public/images/work/, made by `npm run capture-portfolio`
+ * (scripts/capture-portfolio.mjs) from its live URL: the window size of each view, and the widths of
+ * the WebP files written for it (the page picks one with srcset).
+ */
+export const screenshotViews: Record<ScreenshotView, { width: number, height: number, files: readonly number[] }> = {
+  desktop: { width: 1440, height: 900, files: [720, 1440] },
+  mobile: { width: 375, height: 760, files: [375] },
+}
+
+/** Path inside public/images/ of one screenshot file: screenshotFile('landing-page', 'desktop', 720). */
+export function screenshotFile(id: string, view: ScreenshotView, width: number): string {
+  return `work/${id}-${view}-${width}.webp`
 }
 
 /** Every sample website was made for a fictional brand, and says so (brand.md "## กฎ"). */
@@ -21,7 +37,8 @@ const SAMPLE_LABEL = 'ผลงานตัวอย่าง (แบรนด�
  *
  * The Landing-page URL is the one that is live when the site is built. When Landing-page moves to the
  * approdo organisation (task LP-029), its URL changes to https://approdo.github.io/Landing-page/ and
- * GitHub Pages does not redirect the old one: change `url` here then (task BR-008 B1).
+ * GitHub Pages does not redirect the old one: change `url` here then and run `npm run capture-portfolio`
+ * (task BR-008 B1).
  */
 export const portfolio: PortfolioItem[] = [
   {
@@ -31,6 +48,10 @@ export const portfolio: PortfolioItem[] = [
     kind: 'เว็บหน้าเดียว (Landing Page) · ภาษาไทย',
     description: 'ศูนย์ฝึกอบรมองค์กรและบริการจัดหาวิทยากร — มีฟอร์มขอใบเสนอราคา',
     url: 'https://0984043505frong.github.io/Landing-page/',
+    screenshotAlt: {
+      desktop: 'ภาพหน้าจอเว็บ BrightPath Academy (แบรนด์สมมติ) บนคอม',
+      mobile: 'ภาพหน้าจอเว็บ BrightPath Academy (แบรนด์สมมติ) บนมือถือ',
+    },
     measurement: {
       tool: 'PageSpeed Insights',
       method: 'มือถือ · ค่ากลาง 5 รอบ',
@@ -46,6 +67,10 @@ export const portfolio: PortfolioItem[] = [
     kind: 'เว็บหลายหน้า · 5 หน้า · ไทย / อังกฤษ',
     description: 'ร้านนวดแผนไทยและสปา — บริการและราคา แกลเลอรี และหน้าติดต่อ',
     url: 'https://approdo.github.io/Business-site/',
+    screenshotAlt: {
+      desktop: 'ภาพหน้าจอเว็บนวลไพล นวดไทย & สปา (แบรนด์สมมติ) บนคอม',
+      mobile: 'ภาพหน้าจอเว็บนวลไพล นวดไทย & สปา (แบรนด์สมมติ) บนมือถือ',
+    },
     measurement: {
       tool: 'PageSpeed Insights',
       method: 'มือถือ · ค่ากลาง 3 รอบ',

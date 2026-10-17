@@ -7,10 +7,11 @@ the rest of the repository is not covered by them.
 
 The inline SVG icons in `app/components/icons/` are copied from
 [lucide-static](https://www.npmjs.com/package/lucide-static) 1.48.0 ([lucide.dev](https://lucide.dev)),
-except `IconLine.vue` (see Simple Icons below). Each icon file names its source icon.
+except `IconLine.vue` (see Simple Icons below) and `IconCheck.vue` (drawn for this site). Each icon
+file names its source.
 
-Some Lucide icons are derived from the Feather project. Of the icons used here, these are:
-`chevron-down`, `chevron-right`, `clock` and `x` (MIT licence below).
+Some Lucide icons are derived from the Feather project. Of the icons used here, this is `clock`
+(MIT licence below).
 
 ```text
 ISC License

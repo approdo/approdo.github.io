@@ -15,7 +15,7 @@ const locales = siteLocales(site.english)
 export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxt/fonts', '@nuxtjs/i18n'],
   components: [
-    // Icon components go by their file name (IconMenu), without the folder prefix (IconsIconMenu).
+    // Icon components go by their file name (IconLine), without the folder prefix (IconsIconLine).
     { path: '~/components/icons', pathPrefix: false },
     '~/components',
   ],

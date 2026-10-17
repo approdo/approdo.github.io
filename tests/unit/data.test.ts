@@ -1,12 +1,13 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { contactSection, onlyChannel } from '../../app/data/contact'
 import { faqSection, faqs } from '../../app/data/faq'
 import { hero } from '../../app/data/hero'
 import { menuSections } from '../../app/data/menu'
-import { portfolio, workSection } from '../../app/data/portfolio'
+import { portfolio, screenshotFile, screenshotViews, workSection } from '../../app/data/portfolio'
 import { allPlans, callToAction, included, launchOffer, launchTerms, planDurations, plans, pricingSection, terms, termsBoxes } from '../../app/data/pricing'
 import { processSection, steps } from '../../app/data/process'
-import type { SectionHeading, ThaiText } from '../../app/types/content'
+import type { ScreenshotView, SectionHeading, ThaiText } from '../../app/types/content'
 import { joinPhrases } from '../../app/utils/phrases'
 
 // Rules of the section data in app/data/, not its content (lesson G-018): no price, answer or score is
@@ -40,6 +41,25 @@ function expectLines(lines: readonly ThaiText[], label: string) {
 function expectHeading(section: SectionHeading, label: string) {
   expectThaiText(section.heading, `${label} heading`)
   if (section.intro) expectThaiText(section.intro, `${label} intro`)
+  if (section.accent) {
+    // The accent words are inside one phrase of the intro, so <PhraseText> can wrap them.
+    const phrases = typeof section.intro === 'string' ? [section.intro] : [...section.intro ?? []]
+    expect(phrases.some(phrase => phrase.includes(section.accent!)), `${label} accent "${section.accent}" in one phrase of the intro`).toBe(true)
+  }
+}
+
+/** Width and height of a WebP file (lossy VP8, lossless VP8L or extended VP8X). */
+function webpSize(file: Buffer) {
+  expect(file.toString('ascii', 0, 4)).toBe('RIFF')
+  expect(file.toString('ascii', 8, 12)).toBe('WEBP')
+  const chunk = file.toString('ascii', 12, 16)
+  if (chunk === 'VP8 ') return { width: file.readUInt16LE(26) & 0x3FFF, height: file.readUInt16LE(28) & 0x3FFF }
+  if (chunk === 'VP8L') {
+    const bits = file.readUInt32LE(21)
+    return { width: (bits & 0x3FFF) + 1, height: ((bits >> 14) & 0x3FFF) + 1 }
+  }
+  if (chunk === 'VP8X') return { width: file.readUIntLE(24, 3) + 1, height: file.readUIntLE(27, 3) + 1 }
+  throw new Error(`unknown WebP chunk ${chunk}`)
 }
 
 function expectUniqueIds(items: readonly { id: string }[], label: string) {
@@ -154,6 +174,22 @@ describe('portfolio', () => {
       expect(item.label, `${item.id} label`).toContain('แบรนด์สมมติ')
       expect(new URL(item.url).protocol, `${item.id} url`).toBe('https:')
       expect(item.url.endsWith('/'), `${item.id} url ends with '/'`).toBe(true)
+    }
+  })
+
+  it('has both screenshots of every website as WebP files at the widths in screenshotViews (npm run capture-portfolio)', () => {
+    for (const item of portfolio) {
+      for (const [view, { width, height, files }] of Object.entries(screenshotViews) as [ScreenshotView, typeof screenshotViews.desktop][]) {
+        // brand.md: the alt text says that the brand is fictional too.
+        expectThaiText(item.screenshotAlt[view], `${item.id} ${view} alt`)
+        expect(item.screenshotAlt[view], `${item.id} ${view} alt`).toContain('แบรนด์สมมติ')
+        expect(files.length, `${view} files`).toBeGreaterThan(0)
+        for (const fileWidth of files) {
+          const file = readFileSync(new URL(`../../public/images/${screenshotFile(item.id, view, fileWidth)}`, import.meta.url))
+          // Each file is the window of `view` scaled to its width.
+          expect(webpSize(file), `${item.id} ${view} ${fileWidth}`).toEqual({ width: fileWidth, height: Math.round(height * fileWidth / width) })
+        }
+      }
     }
   })
 

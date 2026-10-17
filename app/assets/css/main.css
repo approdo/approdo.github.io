@@ -2,12 +2,16 @@
 @import "./tokens.css";
 
 /*
- * Width of the page content: the full width less 16px on each side, and at most
+ * Width of the page content: the full width less 20px on each side (32px from 640px), and at most
  * --container-page wide, centred on wide screens.
  */
 @utility page-container {
-  width: min(100% - 32px, var(--container-page));
+  width: min(100% - 40px, var(--container-page));
   margin-inline: auto;
+
+  @variant sm {
+    width: min(100% - 64px, var(--container-page));
+  }
 }
 
 /* Vertical padding of a page section: 64px, and 96px from 1024px. */
@@ -22,24 +26,17 @@
 @layer base {
   html {
     /*
-     * Room for the sticky header (64px plus its 1px bottom border): whenever the page scrolls
-     * something into view, it keeps it out of the top 80px of the window, below the header instead
-     * of under it. That covers the target of an in-page link (#prices, #contact) and any element
+     * Room for the sticky header (68px plus its 1px bottom border): whenever the page scrolls
+     * something into view, it keeps it out of the top 76px of the window, below the header instead
+     * of under it. That covers the target of an in-page link (#pricing, #contact) and any element
      * that gets keyboard focus with Tab or Shift+Tab. Set once here, on the element that scrolls
      * (lesson G-023); do not give the targets a top scroll margin as well, the two add up.
      */
-    scroll-padding-top: 80px;
+    scroll-padding-top: 76px;
 
     /* Glide to a section after a click on an in-page link, unless the visitor asked for less motion. */
     @media (prefers-reduced-motion: no-preference) {
       scroll-behavior: smooth;
-    }
-  }
-
-  /* The page behind the open mobile menu does not scroll (SiteHeader, useMobileMenu). */
-  html.menu-open {
-    @variant max-lg {
-      overflow: hidden;
     }
   }
 
@@ -59,7 +56,7 @@
   h2,
   h3 {
     font-weight: 500;
-    line-height: 1.35;
+    line-height: 1.3;
   }
 
   a {
@@ -67,11 +64,19 @@
   }
 
   /*
-   * Visible keyboard focus on everything that can be focused: navy on light backgrounds. Sections
-   * with a navy background switch the ring to orange (brand.md: orange is not readable on white).
+   * Visible keyboard focus on everything that can be focused: navy on light backgrounds. Parts with a
+   * navy background (the price ticket, the contact section, the footer) switch the ring to orange with
+   * the `on-navy` utility below (brand.md: orange is not readable on white).
    */
   :focus-visible {
     outline: 3px solid var(--color-harbor-navy);
     outline-offset: 3px;
+  }
+}
+
+/* For a navy box: the focus ring of everything inside it is orange (navy on navy would not show). */
+@utility on-navy {
+  & :focus-visible {
+    outline-color: var(--color-beacon-orange);
   }
 }

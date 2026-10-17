@@ -3,7 +3,7 @@
   "newTab": "(เปิดในแท็บใหม่)",
   "header": {
     "navLabel": "เมนูหลัก",
-    "menuButton": "เมนู"
+    "home": "{name} — กลับขึ้นด้านบน"
   },
   "nav": {
     "work": "ผลงาน",
@@ -18,11 +18,11 @@
     "addFriend": "เพิ่มเพื่อน / ทักไลน์"
   },
   "hero": {
-    "seeWork": "ดูผลงาน"
+    "seeWork": "ดูผลงาน",
+    "details": "รายละเอียด"
   },
   "work": {
     "open": "เปิดดูเว็บ",
-    "scoresLabel": "คะแนน {tool}",
     "measuredOn": "วัด {date}",
     "score": {
       "performance": "Performance",
@@ -35,7 +35,9 @@
     "duration": "ระยะเวลา"
   },
   "contact": {
-    "account": "LINE OA:"
+    "account": "LINE OA:",
+    "qrAlt": "QR เพิ่มเพื่อน LINE OA {id}",
+    "qrCaption": "เปิดบนคอม? สแกนด้วยมือถือ"
   },
   "footer": {
     "lineLink": "LINE OA: {name} ({id})"
