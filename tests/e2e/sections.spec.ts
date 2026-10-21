@@ -121,6 +121,63 @@ for (const width of [375, 768, 1440]) {
 }
 
 // ---------------------------------------------------------------------------------------------
+// Prices: the regular price after each launch price, in the hero's ticket and on the price cards
+// (decision D-017, design BR-020). 320px and 1024px are where the ticket is narrowest.
+// ---------------------------------------------------------------------------------------------
+
+const plansWithRegularPrice = plans.filter(plan => plan.regularPrice)
+
+for (const width of [320, 375, 768, 1024, 1440]) {
+  test(`at ${width}px the ticket and the cards show each regular price after its launch price, on one line and in the box`, async ({ page }) => {
+    test.skip(plansWithRegularPrice.length === 0, 'no package has a regular price')
+    await page.setViewportSize({ width, height: 900 })
+    await openPage(page)
+    await page.evaluate(() => document.fonts.ready)
+
+    const places = [['ticket', page.locator('#top aside ol > li')], ['card', page.locator('#pricing li:has(> h3)')]] as const
+    for (const [place, rows] of places) {
+      await expect(rows, place).toHaveCount(plans.length)
+      for (const [index, plan] of plans.entries()) {
+        if (!plan.regularPrice) continue
+        const label = `${place} ${plan.id}`
+        const row = rows.nth(index)
+        const regularPrice = row.getByText(plan.regularPrice, { exact: true })
+        await expect(regularPrice, label).toHaveCount(1)
+        await expect(regularPrice, label).toBeVisible()
+        // Words, not a struck-through number: it is the price after the launch offer, not a cancelled one.
+        await expect(regularPrice, label).toHaveCSS('text-decoration-line', 'none')
+
+        // Read in the order of the price list: launch price, regular price, duration.
+        const text = (await row.innerText()).replace(/\s+/g, ' ')
+        const positions = [plan.price, plan.regularPrice, plan.duration ?? ''].filter(part => part).map(part => text.indexOf(part))
+        expect(Math.min(...positions), `${label}: ${text}`).toBeGreaterThanOrEqual(0)
+        expect(positions, `${label}: ${text}`).toEqual([...positions].sort((a, b) => a - b))
+
+        const layout = await regularPrice.evaluate((element) => {
+          const range = document.createRange()
+          range.selectNodeContents(element)
+          const lineTops = new Set([...range.getClientRects()].filter(rect => rect.width > 0).map(rect => Math.round(rect.top)))
+          // The ticket row or the card: the box the regular price must stay inside.
+          const box = element.closest('li')!
+          const style = getComputedStyle(box)
+          const contentRight = box.getBoundingClientRect().right - Number.parseFloat(style.paddingRight) - Number.parseFloat(style.borderRightWidth)
+          const rect = element.getBoundingClientRect()
+          return { lines: lineTops.size, overflow: rect.right - contentRight, width: rect.width }
+        })
+        expect(layout.lines, `${label}: lines`).toBe(1)
+        expect(layout.overflow, `${label}: px out of the box`).toBeLessThanOrEqual(1)
+        if (place === 'ticket') {
+          // From 1024px the regular price sits under the launch price in the same column; being narrower,
+          // it leaves the column as wide as before, and the package name beside it keeps its room.
+          const launchPrice = (await row.getByText(plan.price, { exact: true }).boundingBox())!
+          expect(layout.width, `${label}: narrower than the launch price`).toBeLessThanOrEqual(launchPrice.width)
+        }
+      }
+    }
+  })
+}
+
+// ---------------------------------------------------------------------------------------------
 // Header: logo and LINE button at every width, the menu from 1024px (no menu button on phones)
 // ---------------------------------------------------------------------------------------------
 

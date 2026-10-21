@@ -111,13 +111,26 @@ const hasAmount = (price: string) => /\d/.test(price)
             class="grid gap-x-3.5 gap-y-0.5 border-b border-shore-cream/14 py-4 last:border-b-0 lg:grid-cols-[minmax(0,1fr)_auto]"
           >
             <span class="font-medium text-white">{{ plan.name }} <span class="whitespace-nowrap">{{ plan.detail }}</span></span>
+            <!--
+              The price, then the regular price as one phrase: on the price's line while it fits, else on
+              the next line. From 1024px the regular price is a line of its own under the price, and the
+              price cell spans the duration's row, so the ticket keeps its height (design BR-020).
+            -->
             <span
-              class="font-medium text-beacon-orange lg:text-right"
-              :class="{ 'whitespace-nowrap': hasAmount(plan.price) }"
-            >{{ plan.price }}</span>
+              class="lg:text-right"
+              :class="{ 'lg:row-span-2': plan.regularPrice }"
+            >
+              <span
+                class="font-medium text-beacon-orange"
+                :class="{ 'whitespace-nowrap': hasAmount(plan.price) }"
+              >{{ plan.price }}</span>
+              <template v-if="plan.regularPrice">
+                {{ ' ' }}<span class="text-[15px] whitespace-nowrap lg:mt-0.5 lg:block">{{ plan.regularPrice }}</span>
+              </template>
+            </span>
             <span
               v-if="plan.duration"
-              class="col-span-full text-[15px] whitespace-nowrap"
+              class="col-span-full text-[15px] whitespace-nowrap lg:col-1"
             >{{ plan.duration }}</span>
           </li>
         </ol>

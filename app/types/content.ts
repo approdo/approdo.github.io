@@ -93,6 +93,11 @@ export interface PricePlan {
   detail: string
   /** The price exactly as written in the price list (a starting price, or that it is quoted per job). */
   price: string
+  /**
+   * The regular price written after a launch price in the price list, with its brackets: '(ปกติ 1,500)'.
+   * It is shown right after the price as one phrase, never split (lesson G-007). Not every package has one.
+   */
+  regularPrice?: string
   /** How long the work takes, e.g. '3–5 วัน'. Not every package has one. */
   duration?: string
 }

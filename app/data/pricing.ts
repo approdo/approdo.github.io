@@ -6,15 +6,21 @@ import type { LabelledList, PricePlan, SectionHeading, TermsBox } from '../types
  * change is made once.
  *
  * Everything is word for word from the brand file, Demo-story/_brand/approdo/brand.md, in the story
- * repository (brand-site decisions D-003 and D-006):
- * - "## ราคา": the auto-reply of the LINE Official Account (keyword ราคา / แพ็กเกจ / สนใจ); the emoji
- *   and the circled numbers of the LINE message are left out.
+ * repository (brand-site decisions D-003, D-006 and D-017):
+ * - "## ราคา": the price list that the LINE Official Account sends as its auto-reply (keyword ราคา /
+ *   แพ็กเกจ / สนใจ), as of 2026-10-22: the launch prices, each followed by its regular price (the
+ *   price after the first five clients). The emoji and the circled numbers of the LINE message are
+ *   left out. The brackets around a regular price, '(ปกติ 1,500)', are format too, and are kept
+ *   because the design shows them (BR-020). One line of the message is for LINE only and is not on the
+ *   page: the link to this site, which brand.md names in a note under the message.
  * - "## เงื่อนไขงาน": the owner's answers to questions Q1–Q9 (2026-10-17). An answer the owner wrote
  *   as several parts with ' · ' is a list here, one entry per part.
  *
  * Rules for editing: change no word, including the en dash in ranges (3–5, U+2013) and the comma in
  * 1,500. Thai text is a list of phrases where a line may break only between two phrases (lesson G-007);
  * joined, the phrases are the original text. Never split a price or a range across two phrases.
+ * Demo-story/Brand-site/evidence/BR-002/check-verbatim.mjs, in the story repository, compares this
+ * file with brand.md.
  */
 
 export const pricingSection: SectionHeading = {
@@ -35,6 +41,7 @@ export const plans: PricePlan[] = [
     name: 'เว็บหน้าเดียว',
     detail: '(Landing Page)',
     price: 'เริ่มต้น 500 บาท',
+    regularPrice: '(ปกติ 1,500)',
     duration: '2–3 วัน',
   },
   {
@@ -42,6 +49,7 @@ export const plans: PricePlan[] = [
     name: 'เว็บหลายหน้า',
     detail: '(บริษัท / ร้านค้า 3–5 หน้า)',
     price: 'เริ่มต้น 1,500 บาท',
+    regularPrice: '(ปกติ 3,500)',
     duration: '3–7 วัน',
   },
   {

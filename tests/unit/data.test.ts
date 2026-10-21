@@ -97,8 +97,20 @@ describe('pricing (the one file with prices and terms)', () => {
     }
   })
 
+  it('gives a package a regular price only as "ปกติ" with an amount other than its launch price (decision D-017)', () => {
+    const amount = (price: string) => price.match(/\d[\d,]*/)?.[0]
+    for (const plan of plans) {
+      if (plan.regularPrice === undefined) continue
+      const label = `${plan.id} regular price`
+      expectThaiText(plan.regularPrice, label)
+      expect(plan.regularPrice, label).toContain('ปกติ')
+      expect(amount(plan.regularPrice), `${label} has an amount`).toBeDefined()
+      expect(amount(plan.regularPrice), `${label} is not the launch price`).not.toBe(amount(plan.price))
+    }
+  })
+
   it('writes a range with the en dash (U+2013), never a hyphen', () => {
-    const texts = plans.flatMap(plan => [plan.detail, plan.price, plan.duration ?? ''])
+    const texts = plans.flatMap(plan => [plan.detail, plan.price, plan.regularPrice ?? '', plan.duration ?? ''])
     for (const text of texts) expect(text, text).not.toMatch(/\d-\d/)
   })
 

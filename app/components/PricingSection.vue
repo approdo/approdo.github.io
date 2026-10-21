@@ -53,6 +53,13 @@ const hasAmount = (price: string) => /\d/.test(price)
           >
             {{ plan.price }}
           </p>
+          <!-- The regular price under the price, in the style of the line under the name (design BR-020). -->
+          <p
+            v-if="plan.regularPrice"
+            class="-mt-1 text-[16px] whitespace-nowrap text-harbor-navy/78"
+          >
+            {{ plan.regularPrice }}
+          </p>
           <p
             v-if="plan.duration"
             class="inline-flex items-center gap-1.5 rounded-full bg-harbor-navy px-3 py-1 text-[15px] font-medium text-shore-cream"
