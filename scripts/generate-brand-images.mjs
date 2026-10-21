@@ -1,6 +1,8 @@
 // Makes the site's icons and link-preview image from Approdo's own logo files (lesson G-020):
 //
 //   public/favicon.svg           browser tab icon: mark.svg itself, the A on its navy square
+//   public/favicon.ico           the same icon for clients that ask for /favicon.ico instead of reading the
+//                                page's <link rel="icon">: mark.svg rendered by Chromium at 16, 32 and 48 px
 //   public/apple-touch-icon.png  180×180 home-screen icon for iPhone and iPad: mark.svg rendered by Chromium
 //   public/og-image.png          1200×630 preview shown when a link to the site is shared: the A of
 //                                mark-on-dark.svg, the wordmark "Approdo" and the tagline on the navy gradient
@@ -12,11 +14,12 @@
 // and the tagline only, no other text.
 //
 // After changing a logo file, a colour, a font or the tagline, run `npm run brand-images`, look at the
-// three files and commit them.
+// four files and commit them.
 //
-// The PNG files are rendered by the Chromium that the e2e tests use (@playwright/test; install it once
-// with `npx playwright install chromium`). The link preview needs internet: its page loads the two web
-// fonts from Google Fonts. Only this script does that; the site itself serves its own copy of the fonts.
+// The PNG files and the images in favicon.ico are rendered by the Chromium that the e2e tests use
+// (@playwright/test; install it once with `npx playwright install chromium`). The link preview needs
+// internet: its page loads the two web fonts from Google Fonts. Only this script does that; the site
+// itself serves its own copy of the fonts.
 import { readFile, stat, writeFile } from 'node:fs/promises'
 import { chromium } from '@playwright/test'
 // Node 22.18+ strips TypeScript types on import, so this reads the same data as the site.
@@ -92,18 +95,59 @@ ${withFonts ? `<link rel="stylesheet" href="${escapeHtml(fontStylesheet)}">` : '
 </html>`
 }
 
+/** An icon of `size` × `size` pixels: mark.svg over the whole image. `file` names it in messages. */
+function markIcon(file, size) {
+  return {
+    file,
+    width: size,
+    height: size,
+    fonts: [],
+    html: htmlPage({
+      withFonts: false,
+      styles: `img { display: block; width: ${size}px; height: ${size}px; }`,
+      body: `<img src="${svgDataUrl(mark)}" alt="">`,
+    }),
+  }
+}
+
 // iOS rounds the corners of home-screen icons itself, and fills transparent pixels with black.
 // mark.svg is a full navy square, so it is used as it is, over the whole icon.
-const appleTouchIcon = {
-  file: 'apple-touch-icon.png',
-  width: 180,
-  height: 180,
-  fonts: [],
-  html: htmlPage({
-    withFonts: false,
-    styles: 'img { display: block; width: 180px; height: 180px; }',
-    body: `<img src="${svgDataUrl(mark)}" alt="">`,
-  }),
+const appleTouchIcon = markIcon('apple-touch-icon.png', 180)
+
+// Some clients (crawlers, link-preview services, older browsers) do not read the page's
+// <link rel="icon">: they ask for /favicon.ico at the root of the domain, which is this site's root.
+// The file holds the tab icon at the sizes such clients show, each image rendered like the
+// home-screen icon.
+const faviconIco = {
+  file: 'favicon.ico',
+  images: [16, 32, 48].map(size => markIcon(`favicon.ico ${size}×${size}`, size)),
+}
+
+/**
+ * An ICO file that holds PNG images as they are (read by every current browser, and by Windows since
+ * Vista): a 6-byte header, a 16-byte directory entry per image, then the images one after the other.
+ * Each image is { width, height, png }, at most 255 pixels wide and high.
+ */
+function icoFile(images) {
+  const header = Buffer.alloc(6)
+  // Bytes 0–1 are reserved (0); bytes 2–3 give the file type, 1 = icon; bytes 4–5 the number of images.
+  header.writeUInt16LE(1, 2)
+  header.writeUInt16LE(images.length, 4)
+
+  let offset = header.length + 16 * images.length
+  const entries = images.map(({ width, height, png }) => {
+    const entry = Buffer.alloc(16)
+    entry.writeUInt8(width, 0)
+    entry.writeUInt8(height, 1)
+    // Byte 2 (colours in a palette: none) and byte 3 (reserved) stay 0.
+    entry.writeUInt16LE(1, 4) // colour planes
+    entry.writeUInt16LE(24, 6) // bits per pixel: renderPng() makes RGB images, 8 bits per channel
+    entry.writeUInt32LE(png.length, 8)
+    entry.writeUInt32LE(offset, 12)
+    offset += png.length
+    return entry
+  })
+  return Buffer.concat([header, ...entries, ...images.map(image => image.png)])
 }
 
 /** '#22366A' -> [34, 54, 106] */
@@ -247,6 +291,11 @@ try {
   for (const image of [appleTouchIcon, ogImage]) {
     await save(image.file, await renderPng(browser, image))
   }
+  const icons = []
+  for (const image of faviconIco.images) {
+    icons.push({ width: image.width, height: image.height, png: await renderPng(browser, image) })
+  }
+  await save(faviconIco.file, icoFile(icons))
 }
 finally {
   await browser.close()

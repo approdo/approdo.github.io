@@ -7,6 +7,7 @@ import { menuSections } from '../../app/data/menu'
 import { portfolio, screenshotFile, screenshotViews, workSection } from '../../app/data/portfolio'
 import { allPlans, callToAction, included, launchOffer, launchTerms, planDurations, plans, pricingSection, terms, termsBoxes } from '../../app/data/pricing'
 import { processSection, steps } from '../../app/data/process'
+import { site } from '../../app/data/site'
 import type { ScreenshotView, SectionHeading, ThaiText } from '../../app/types/content'
 import { joinPhrases } from '../../app/utils/phrases'
 
@@ -186,6 +187,17 @@ describe('portfolio', () => {
       expect(item.label, `${item.id} label`).toContain('แบรนด์สมมติ')
       expect(new URL(item.url).protocol, `${item.id} url`).toBe('https:')
       expect(item.url.endsWith('/'), `${item.id} url ends with '/'`).toBe(true)
+    }
+  })
+
+  it('links every website at its address in the approdo organisation, on the domain of this site (task LP-029)', () => {
+    // A site that moves to another GitHub account is not redirected: its old address answers 404, as the
+    // Landing-page one under the author's account did after it moved to the organisation (task BR-008 B1).
+    const siteUrl = new URL(site.url)
+    for (const item of portfolio) {
+      const url = new URL(item.url)
+      expect(url.host, `${item.id} url`).toBe(siteUrl.host)
+      expect(url.pathname, `${item.id} url is another site than this one`).not.toBe(siteUrl.pathname)
     }
   })
 

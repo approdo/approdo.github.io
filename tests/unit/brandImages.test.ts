@@ -3,18 +3,46 @@ import { describe, expect, it } from 'vitest'
 import { removeMetadata, svgDrawing } from '../../scripts/lib/svg'
 
 // The icons and the link-preview image that `npm run brand-images` makes from Approdo's logo files
-// (scripts/generate-brand-images.mjs, task BR-004). The rules hold for any logo: the tab icon is the
-// logo file, the PNG files have the sizes that browsers and apps expect, and the script draws nothing
-// of its own. The browser test (tests/e2e/smoke.spec.ts) compares the home-screen icon with the logo.
+// (scripts/generate-brand-images.mjs, tasks BR-004 and BR-008 B8). The rules hold for any logo: the tab
+// icon is the logo file, the PNG images have the sizes that browsers and apps expect, and the script
+// draws nothing of its own. The browser tests (tests/e2e/smoke.spec.ts) compare the home-screen icon
+// and the images in favicon.ico with the logo.
 
 const publicDir = new URL('../../public/', import.meta.url)
 const brandDir = new URL('images/brand/', publicDir)
 
-/** Width, height and colour type of a PNG file, from its IHDR chunk. */
+/** Width, height, bit depth and colour type of a PNG image, from its IHDR chunk. */
+function pngInfo(png: Buffer, label: string) {
+  expect(png.subarray(1, 4).toString('latin1'), `${label} is a PNG image`).toBe('PNG')
+  return { width: png.readUInt32BE(16), height: png.readUInt32BE(20), bitDepth: png[24]!, colorType: png[25]!, bytes: png.length }
+}
+
+/** pngInfo() of a PNG file in public/. */
 function pngHeader(file: string) {
-  const png = readFileSync(new URL(file, publicDir))
-  expect(png.subarray(1, 4).toString('latin1'), `${file} is a PNG file`).toBe('PNG')
-  return { width: png.readUInt32BE(16), height: png.readUInt32BE(20), colorType: png[25], bytes: png.length }
+  return pngInfo(readFileSync(new URL(file, publicDir)), file)
+}
+
+/**
+ * The images of an ICO file, as its directory lists them: a 6-byte header (reserved, type 1 = icon,
+ * number of images), then 16 bytes per image. Each image here is a PNG file inside the ICO file.
+ */
+function icoImages(ico: Buffer) {
+  expect(ico.readUInt16LE(0), 'reserved').toBe(0)
+  expect(ico.readUInt16LE(2), 'an icon file (type 1)').toBe(1)
+  return Array.from({ length: ico.readUInt16LE(4) }, (_, index) => {
+    const entry = 6 + 16 * index
+    const bytes = ico.readUInt32LE(entry + 8)
+    const offset = ico.readUInt32LE(entry + 12)
+    return {
+      // A width or height of 0 stands for 256.
+      width: ico[entry]! || 256,
+      height: ico[entry + 1]! || 256,
+      bitsPerPixel: ico.readUInt16LE(entry + 6),
+      bytes,
+      offset,
+      data: ico.subarray(offset, offset + bytes),
+    }
+  })
 }
 
 describe('svg helpers', () => {
@@ -46,6 +74,28 @@ describe('logo files and brand images', () => {
     const favicon = readFileSync(new URL('favicon.svg', publicDir), 'utf8')
     const mark = readFileSync(new URL('mark.svg', brandDir), 'utf8')
     expect(svgDrawing(favicon)).toBe(svgDrawing(mark))
+  })
+
+  it('makes a favicon.ico for clients that ask for /favicon.ico: square PNG images, 16×16 and 32×32 among them (task BR-008 B8)', () => {
+    const ico = readFileSync(new URL('favicon.ico', publicDir))
+    const images = icoImages(ico)
+    expect(images.map(image => image.width)).toEqual(expect.arrayContaining([16, 32]))
+    // The directory gives each image's bits per pixel: its channels (colour type 2 = RGB, 6 = RGB with
+    // alpha) times its bit depth.
+    const channels: Record<number, number> = { 2: 3, 6: 4 }
+
+    // The images come right after the directory, one after the other, up to the end of the file.
+    let end = 6 + 16 * images.length
+    for (const image of images) {
+      const label = `favicon.ico ${image.width}×${image.height}`
+      expect(image.height, `${label} is square`).toBe(image.width)
+      const png = pngInfo(image.data, label)
+      expect([png.width, png.height], label).toEqual([image.width, image.height])
+      expect(image.bitsPerPixel, label).toBe(channels[png.colorType]! * png.bitDepth)
+      expect(image.offset, label).toBe(end)
+      end += image.bytes
+    }
+    expect(end).toBe(ico.length)
   })
 
   it('makes a 180×180 home-screen icon without transparency (iOS would fill it with black)', () => {

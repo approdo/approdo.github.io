@@ -35,10 +35,10 @@ const SAMPLE_LABEL = 'ผลงานตัวอย่าง (แบรนด�
  * - Business-site: Demo-story/Business-site/evidence/BS-006/psi/runs.md and run-1.json – run-3.json
  *   (3 runs, Performance 93 / 96 / 96, Lighthouse 13.5.0)
  *
- * The Landing-page URL is the one that is live when the site is built. When Landing-page moves to the
- * approdo organisation (task LP-029), its URL changes to https://approdo.github.io/Landing-page/ and
- * GitHub Pages does not redirect the old one: change `url` here then and run `npm run capture-portfolio`
- * (task BR-008 B1).
+ * Landing-page moved from the author's GitHub account to the approdo organisation (task LP-029).
+ * GitHub Pages does not redirect the old address, so the card links to the new one (task BR-008 B1).
+ * The page itself did not change, so the scores and the screenshots, taken at the old address, still
+ * show it.
  */
 export const portfolio: PortfolioItem[] = [
   {
@@ -47,7 +47,7 @@ export const portfolio: PortfolioItem[] = [
     label: SAMPLE_LABEL,
     kind: 'เว็บหน้าเดียว (Landing Page) · ภาษาไทย',
     description: 'ศูนย์ฝึกอบรมองค์กรและบริการจัดหาวิทยากร — มีฟอร์มขอใบเสนอราคา',
-    url: 'https://0984043505frong.github.io/Landing-page/',
+    url: 'https://approdo.github.io/Landing-page/',
     screenshotAlt: {
       desktop: 'ภาพหน้าจอเว็บ BrightPath Academy (แบรนด์สมมติ) บนคอม',
       mobile: 'ภาพหน้าจอเว็บ BrightPath Academy (แบรนด์สมมติ) บนมือถือ',
