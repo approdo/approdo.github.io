@@ -45,7 +45,10 @@ const lineLinkText = [`${t('contact.account')} `, `${site.line.name} `, `(${site
           :href="site.line.url"
           v-bind="newTabAttributes(site.line.url)"
           class="inline-flex min-h-11 items-center justify-self-start text-white underline decoration-beacon-orange underline-offset-4 hover:decoration-2"
-        ><PhraseText :text="lineLinkText" /><span class="sr-only"> {{ t('newTab') }}</span></a>
+        ><PhraseText
+          :text="lineLinkText"
+          inline
+        /><span class="sr-only"> {{ t('newTab') }}</span></a>
       </p>
       <p>{{ site.copyright }}</p>
     </div>

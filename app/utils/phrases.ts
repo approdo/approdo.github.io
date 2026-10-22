@@ -2,7 +2,7 @@ import type { ThaiText } from '../types/content'
 
 /** One phrase of a phrase list, split the way <PhraseText> renders it. */
 export interface PhrasePart {
-  /** The phrase without the space at its end. It goes inside a `white-space: nowrap` span. */
+  /** The phrase without the space at its end. It goes inside an `inline-block max-w-full` span (see PhraseText.ts). */
   text: string
   /** The space at the end of the phrase ('' if none). It goes after the span, as a text node of its own. */
   space: string

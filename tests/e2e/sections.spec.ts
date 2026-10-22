@@ -333,15 +333,18 @@ test('the page asks no other site for anything while it loads and scrolls: no QR
   expect(requested.filter(url => new URL(url).host !== pageHost)).toEqual([])
 })
 
-for (const width of [375, 1440]) {
-  test(`at ${width}px no phrase that must stay on one line sticks out of its box (lesson G-007)`, async ({ page }) => {
+for (const width of [320, 375, 1440]) {
+  test(`at ${width}px every phrase is on one line and none sticks out of its box (lesson G-007)`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 })
     await openPage(page)
     await page.evaluate(() => document.fonts.ready)
-    const phrases = page.locator('.whitespace-nowrap')
-    // Control: there are such phrases to check.
-    expect(await phrases.count()).toBeGreaterThan(10)
-    const sticking = await phrases.evaluateAll(elements => elements
+    // The phrases of <PhraseText> (inline-block: they wrap inside only when wider than their whole box)
+    // and the spans that must never wrap (nowrap: prices, durations, phrases of an underlined link).
+    const phrases = page.locator('span.inline-block.max-w-full, .whitespace-nowrap')
+    // Control: there are phrases of both kinds to check.
+    expect(await page.locator('span.inline-block.max-w-full').count()).toBeGreaterThan(50)
+    expect(await page.locator('.whitespace-nowrap').count()).toBeGreaterThan(10)
+    const problems = await phrases.evaluateAll(elements => elements
       .filter(element => element.checkVisibility())
       .flatMap((element) => {
         // The box the phrase flows in: its nearest ancestor that is not inline.
@@ -350,9 +353,23 @@ for (const width of [375, 1440]) {
         const style = getComputedStyle(box)
         const right = box.getBoundingClientRect().right - Number.parseFloat(style.paddingRight) - Number.parseFloat(style.borderRightWidth)
         const overflow = element.getBoundingClientRect().right - right
-        return overflow > 1 ? [`${element.textContent!.trim()} +${overflow.toFixed(1)}px`] : []
+        // Lines of the phrase: the distinct tops of the boxes of its text, without screen-reader-only
+        // text, which is clipped somewhere else (Brand-site lesson L-009).
+        const tops = new Set<number>()
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          if (node.parentElement?.closest('.sr-only')) continue
+          const range = document.createRange()
+          range.selectNodeContents(node)
+          for (const rect of range.getClientRects()) if (rect.width > 0) tops.add(Math.round(rect.top))
+        }
+        const text = element.textContent!.trim()
+        return [
+          ...(overflow > 1 ? [`${text} +${overflow.toFixed(1)}px`] : []),
+          ...(tops.size > 1 ? [`${text}: ${tops.size} lines`] : []),
+        ]
       }))
-    expect(sticking).toEqual([])
+    expect(problems).toEqual([])
   })
 }
 

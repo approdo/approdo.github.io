@@ -37,7 +37,11 @@ const { t } = useI18n()
           class="group rounded-md border border-harbor-navy/14 bg-white"
         >
           <summary class="relative flex min-h-14 cursor-pointer list-none items-center rounded-md py-3.75 pr-14 pl-5 text-[18px] leading-normal font-medium decoration-beacon-orange decoration-2 underline-offset-6 hover:underline [&::-webkit-details-marker]:hidden">
-            <PhraseText :text="faq.question" />
+            <!-- `inline`: the question is underlined on hover, and an underline skips inline-block phrases. -->
+            <PhraseText
+              :text="faq.question"
+              inline
+            />
             <!-- Plus when closed, minus when open. -->
             <span
               class="absolute top-1/2 right-4.5 grid size-6.5 -translate-y-1/2 place-items-center rounded-full bg-beacon-orange text-harbor-navy"

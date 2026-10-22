@@ -8,8 +8,8 @@ import { joinPhrases, joinTexts, toPhraseParts } from '../../app/utils/phrases'
 // A space after 'บริการครบ', none between the other phrases.
 const heading = ['ร้านเล็ก', 'ใกล้บ้าน ', 'บริการครบ', 'ในที่เดียว']
 
-function renderPhraseText(text: ThaiText, accent?: string) {
-  return renderToString(createSSRApp({ render: () => h(PhraseText, { text, accent }) }))
+function renderPhraseText(text: ThaiText, accent?: string, inline?: boolean) {
+  return renderToString(createSSRApp({ render: () => h(PhraseText, { text, accent, inline }) }))
 }
 
 function textContent(html: string) {
@@ -76,8 +76,19 @@ describe('toPhraseParts', () => {
 })
 
 describe('<PhraseText>', () => {
-  it('puts each phrase in a nowrap span, the space after the span and <wbr> where there is no space', async () => {
+  it('puts each phrase in an unbreakable span, the space after the span and <wbr> where there is no space', async () => {
     expect(await renderPhraseText(heading)).toBe(
+      '<span>'
+      + '<span class="inline-block max-w-full">ร้านเล็ก</span><wbr>'
+      + '<span class="inline-block max-w-full">ใกล้บ้าน</span> '
+      + '<span class="inline-block max-w-full">บริการครบ</span><wbr>'
+      + '<span class="inline-block max-w-full">ในที่เดียว</span>'
+      + '</span>',
+    )
+  })
+
+  it('with `inline`, for an underlined link, puts each phrase in an inline nowrap span instead', async () => {
+    expect(await renderPhraseText(heading, undefined, true)).toBe(
       '<span>'
       + '<span class="whitespace-nowrap">ร้านเล็ก</span><wbr>'
       + '<span class="whitespace-nowrap">ใกล้บ้าน</span> '
@@ -88,9 +99,11 @@ describe('<PhraseText>', () => {
   })
 
   it('wraps all phrases in one element and shows the same text as joinPhrases', async () => {
-    const html = await renderPhraseText(heading)
-    expect(topLevelElementCount(html)).toBe(1)
-    expect(textContent(html)).toBe(joinPhrases(heading))
+    for (const inline of [false, true]) {
+      const html = await renderPhraseText(heading, undefined, inline)
+      expect(topLevelElementCount(html)).toBe(1)
+      expect(textContent(html)).toBe(joinPhrases(heading))
+    }
   })
 
   it('shows a plain string as one run of text that the browser may break anywhere', async () => {
@@ -99,8 +112,8 @@ describe('<PhraseText>', () => {
 
   it('wraps the first place of the accent words in <em>, inside their phrase', async () => {
     expect(await renderPhraseText(['ร้านเล็ก ', 'ใกล้บ้านคุณ'], 'ใกล้บ้าน')).toBe(
-      '<span><span class="whitespace-nowrap">ร้านเล็ก</span> '
-      + '<span class="whitespace-nowrap"><em>ใกล้บ้าน</em>คุณ</span></span>',
+      '<span><span class="inline-block max-w-full">ร้านเล็ก</span> '
+      + '<span class="inline-block max-w-full"><em>ใกล้บ้าน</em>คุณ</span></span>',
     )
     expect(await renderPhraseText('a b a', 'a')).toBe('<span><em>a</em> b a</span>')
     expect(await renderPhraseText('a b', 'z')).toBe('<span>a b</span>')
