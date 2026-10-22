@@ -372,6 +372,77 @@ for (const width of [320, 375, 1024, 1440]) {
 }
 
 // ---------------------------------------------------------------------------------------------
+// The website cards: descriptions in phrases, scores in their cells, phone screenshots of their size
+// (AC14–AC16, BR-008 I3 / A2 / A3)
+// ---------------------------------------------------------------------------------------------
+
+for (const width of [320, 1024, 1440]) {
+  test(`at ${width}px the description of every piece of work is its text in the data, and none of its phrases is split (AC14)`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 })
+    await openPage(page)
+    await page.evaluate(() => document.fonts.ready)
+    for (const [index, item] of portfolio.entries()) {
+      const description = page.locator('#work article').nth(index).getByText(joinPhrases(item.description), { exact: true }).first()
+      await expect(description, item.id).toBeVisible()
+      const phraseLines = await description.locator('span.inline-block.max-w-full').evaluateAll(phrases => phrases.map((phrase) => {
+        const range = document.createRange()
+        range.selectNodeContents(phrase)
+        return new Set([...range.getClientRects()].filter(rect => rect.width > 0).map(rect => Math.round(rect.top))).size
+      }))
+      // Control: one span per phrase of the data.
+      expect(phraseLines, item.id).toHaveLength(typeof item.description === 'string' ? 0 : item.description.length)
+      expect(phraseLines.every(lines => lines === 1), `${item.id}: ${phraseLines}`).toBe(true)
+    }
+  })
+}
+
+for (const width of [320, 360, 375]) {
+  test(`at ${width}px every score's number and name stay inside its cell (AC15)`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 })
+    await openPage(page)
+    await page.evaluate(() => document.fonts.ready)
+    const cells = page.locator('#work dl > div')
+    // Control: four scores per piece of work.
+    await expect(cells).toHaveCount(4 * portfolio.length)
+    const outside = await cells.evaluateAll(list => list.flatMap((cell) => {
+      const style = getComputedStyle(cell)
+      const box = cell.getBoundingClientRect()
+      const left = box.left + Number.parseFloat(style.borderLeftWidth)
+      const right = box.right - Number.parseFloat(style.borderRightWidth)
+      return [...cell.querySelectorAll('dt, dd')].flatMap((text) => {
+        const range = document.createRange()
+        range.selectNodeContents(text)
+        const rects = [...range.getClientRects()].filter(rect => rect.width > 0)
+        const past = Math.max(...rects.map(rect => Math.max(left - rect.left, rect.right - right)))
+        return past > 0.5 ? [`${text.textContent!.trim()} +${past.toFixed(1)}px`] : []
+      })
+    }))
+    expect(outside).toEqual([])
+  })
+}
+
+test.describe('a phone at 375px with 2 device pixels per CSS pixel', () => {
+  test.use({ viewport: { width: 375, height: 812 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true })
+
+  test('takes the 188px file of each website\'s phone screenshot, not the 375px one (AC16)', async ({ page }) => {
+    const images: string[] = []
+    page.on('request', (request) => {
+      if (request.url().includes('-mobile-')) images.push(new URL(request.url()).pathname)
+    })
+    await openPage(page)
+    await page.evaluate(async () => {
+      for (let y = 0; y < document.documentElement.scrollHeight; y += 300) {
+        window.scrollTo({ top: y, behavior: 'instant' })
+        await new Promise(resolve => requestAnimationFrame(resolve))
+      }
+    })
+    await page.waitForLoadState('networkidle')
+    const websites = portfolio.filter(item => !isSystemWork(item))
+    expect(images.sort()).toEqual(websites.map(item => `${sitePath}images/work/${item.id}-mobile-188.webp`).sort())
+  })
+})
+
+// ---------------------------------------------------------------------------------------------
 // The panel's layout at every width, also with longer texts (AC8, lesson G-070)
 // ---------------------------------------------------------------------------------------------
 

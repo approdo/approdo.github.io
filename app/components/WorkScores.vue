@@ -4,9 +4,9 @@ import { dotParts } from '~/utils/phrases'
 
 /**
  * The four PageSpeed Insights scores of a piece of work, captioned with the tool, how they were measured
- * and when. With `onNavy` (the navy panel of the booking system) the lines and the text are light, the
- * sizes follow the visitor's text size (rem), and below 640px, where the panel is narrow, the scores are
- * two rows of two.
+ * and when. Where four score names do not fit side by side, the scores are two rows of two: below 360px on
+ * a website's card, below 640px in the narrower navy panel of the booking system. With `onNavy` (that
+ * panel) the lines and the text are light, and the sizes follow the visitor's text size (rem).
  */
 const props = withDefaults(defineProps<{
   measurement: Measurement
@@ -30,8 +30,8 @@ const styles = computed(() => props.onNavy
       caption: 'text-[0.875rem] text-shore-cream',
     }
   : {
-      list: 'grid-cols-4 border-harbor-navy/14',
-      score: 'border-harbor-navy/14',
+      list: 'grid-cols-2 border-harbor-navy/14 min-[360px]:grid-cols-4',
+      score: 'border-harbor-navy/14 max-[360px]:odd:border-l-0 max-[360px]:[&:nth-child(n+3)]:border-t',
       name: 'text-[12px] text-harbor-navy/78',
       number: 'text-[30px]',
       caption: 'text-[14px] text-harbor-navy/78',

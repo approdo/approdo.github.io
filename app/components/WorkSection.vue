@@ -27,6 +27,10 @@ function screenshot(item: WebsiteWork, view: keyof WebsiteWork['screenshotAlt'])
 // 24px from 1024px, where the frame takes 7 of the 12 columns of the card row).
 const desktopSizes = '(min-width: 1024px) 575px, (min-width: 640px) calc(100vw - 96px), calc(100vw - 72px)'
 
+// How wide the phone screenshot is drawn: 26% of the picture box (22% from 1024px), at most 150px, less
+// its 5px frame on each side. At 375px that is 77px, so a phone (DPR 2) takes the 188px file.
+const mobileSizes = '(min-width: 1024px) 127px, (min-width: 640px) 140px, calc(26vw - 20px)'
+
 /** A name written in Latin letters only ('BrightPath Academy') is set in the display font. */
 const isLatin = (text: string) => /^[ -~]+$/.test(text)
 </script>
@@ -79,6 +83,7 @@ const isLatin = (text: string) => /^[ -~]+$/.test(text)
               <div class="absolute right-4.5 bottom-3 w-[26%] max-w-[150px] overflow-hidden rounded-[18px] border-5 border-harbor-navy bg-harbor-navy shadow-phone lg:right-6.5 lg:bottom-4 lg:w-[22%]">
                 <img
                   v-bind="screenshot(item, 'mobile')"
+                  :sizes="mobileSizes"
                   loading="lazy"
                   decoding="async"
                   class="block aspect-[375/700] h-auto w-full object-cover object-top"

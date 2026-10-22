@@ -14,7 +14,7 @@ export const workSection: SectionHeading = {
  */
 export const screenshotViews: Record<ScreenshotView, { width: number, height: number, files: readonly number[] }> = {
   desktop: { width: 1440, height: 900, files: [720, 1440] },
-  mobile: { width: 375, height: 760, files: [375] },
+  mobile: { width: 375, height: 760, files: [188, 375] },
   phone: { width: 390, height: 844, files: [260, 390] },
 }
 
@@ -87,7 +87,7 @@ export const portfolio: PortfolioItem[] = [
     name: 'BrightPath Academy',
     label: SAMPLE_LABEL,
     kind: 'เว็บหน้าเดียว (Landing Page) · ภาษาไทย',
-    description: 'ศูนย์ฝึกอบรมองค์กรและบริการจัดหาวิทยากร — มีฟอร์มขอใบเสนอราคา',
+    description: ['ศูนย์ฝึกอบรมองค์กร', 'และบริการจัดหาวิทยากร — ', 'มีฟอร์มขอใบเสนอราคา'],
     url: 'https://approdo.github.io/Landing-page/',
     screenshotAlt: {
       desktop: 'ภาพหน้าจอเว็บ BrightPath Academy (แบรนด์สมมติ) บนคอม',
@@ -106,7 +106,7 @@ export const portfolio: PortfolioItem[] = [
     name: 'นวลไพล นวดไทย & สปา',
     label: SAMPLE_LABEL,
     kind: 'เว็บหลายหน้า · 5 หน้า · ไทย / อังกฤษ',
-    description: 'ร้านนวดแผนไทยและสปา — บริการและราคา แกลเลอรี และหน้าติดต่อ',
+    description: ['ร้านนวดแผนไทย', 'และสปา — ', 'บริการและราคา ', 'แกลเลอรี ', 'และหน้าติดต่อ'],
     url: 'https://approdo.github.io/Business-site/',
     screenshotAlt: {
       desktop: 'ภาพหน้าจอเว็บนวลไพล นวดไทย & สปา (แบรนด์สมมติ) บนคอม',

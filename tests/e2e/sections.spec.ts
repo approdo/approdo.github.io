@@ -338,7 +338,7 @@ test('the page asks no other site for anything while it loads and scrolls: no QR
   expect(requested.filter(url => new URL(url).host !== pageHost)).toEqual([])
 })
 
-for (const width of [320, 375, 1440]) {
+for (const width of [320, 375, 1024, 1440]) {
   test(`at ${width}px every phrase is on one line and none sticks out of its box (lesson G-007)`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 })
     await openPage(page)
