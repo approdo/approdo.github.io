@@ -226,3 +226,16 @@ export interface SystemDemo {
 
 /** app/data/portfolio.ts: one piece of work shown as Approdo's. */
 export type PortfolioItem = WebsiteWork | SystemWork
+
+/** app/data/portfolio.ts: the link under a package of the price list to a piece of work made that way. */
+export interface WorkSample {
+  /** The id of the piece of work in the portfolio: the link goes to its url. */
+  workId: string
+  /**
+   * The words of the link, which name the work's fictional brand and say that it is fictional. The
+   * link is underlined, so its phrases never wrap (PhraseText `inline`): keep each one a few words.
+   */
+  link: ThaiText
+  /** What in the sample costs extra in that package, under the link. */
+  extra?: ThaiText
+}

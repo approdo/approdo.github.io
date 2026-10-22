@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs'
 import { expect, test } from '@playwright/test'
 import type { Locator, Page } from '@playwright/test'
 import { hero } from '../../app/data/hero'
-import { demoAnchor, isSystemWork, portfolio } from '../../app/data/portfolio'
+import { demoAnchor, isSystemWork, portfolio, sampleOf } from '../../app/data/portfolio'
+import { plans } from '../../app/data/pricing'
 import { site } from '../../app/data/site'
 import { dotParts, joinPhrases } from '../../app/utils/phrases'
 
@@ -321,6 +322,52 @@ for (const width of [360, 375, 414, 768]) {
     const tops = await page.locator('#top a.rounded-full').evaluateAll(links => links.map(link => Math.round(link.getBoundingClientRect().top)))
     expect(tops).toHaveLength(2)
     expect(tops[0]).toBe(tops[1])
+  })
+}
+
+// ---------------------------------------------------------------------------------------------
+// The price cards' links to a sample of each package (AC11, design v1.1.0 §3.4)
+// ---------------------------------------------------------------------------------------------
+
+for (const width of [320, 375, 1024, 1440]) {
+  test(`at ${width}px each price card links to its sample in a new tab, underlined under every word, each phrase on one line (AC11)`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 })
+    await openPage(page)
+    await page.evaluate(() => document.fonts.ready)
+    const cards = page.locator('#pricing li:has(> h3)')
+    await expect(cards).toHaveCount(plans.length)
+
+    for (const [index, plan] of plans.entries()) {
+      const sample = sampleOf(plan.id)
+      const links = cards.nth(index).locator('a[href]')
+      if (!sample) {
+        await expect(links, plan.id).toHaveCount(0)
+        continue
+      }
+      await expect(links, plan.id).toHaveCount(1)
+      const link = links.first()
+      await expect(link).toHaveAttribute('href', sample.url)
+      await expect(link).toHaveAttribute('target', '_blank')
+      await expect(link).toHaveAttribute('rel', 'noopener')
+      expect(await visibleWords(link), plan.id).toBe(joinPhrases(sample.link))
+      if (sample.extra) await expect(cards.nth(index).getByText(joinPhrases(sample.extra), { exact: true })).toBeVisible()
+
+      const layout = await link.evaluate((element) => {
+        // No underline is drawn under an inline-block box: every child of the link must be inline.
+        const inlineBlocks = [...element.querySelectorAll('*')].filter(child => getComputedStyle(child).display === 'inline-block').length
+        const phraseLines = [...element.querySelectorAll('.whitespace-nowrap')].map((phrase) => {
+          const range = document.createRange()
+          range.selectNodeContents(phrase)
+          return new Set([...range.getClientRects()].filter(rect => rect.width > 0).map(rect => Math.round(rect.top))).size
+        })
+        return { inlineBlocks, phraseLines, underline: getComputedStyle(element).textDecorationLine }
+      })
+      expect(layout.underline, plan.id).toBe('underline')
+      expect(layout.inlineBlocks, plan.id).toBe(0)
+      // Control: the link's phrases were found, one span per phrase of the data.
+      expect(layout.phraseLines, plan.id).toHaveLength(typeof sample.link === 'string' ? 0 : sample.link.length)
+      expect(layout.phraseLines.every(lines => lines === 1), `${plan.id}: ${layout.phraseLines}`).toBe(true)
+    }
   })
 }
 

@@ -4,7 +4,7 @@ import { contactSection, onlyChannel } from '../../app/data/contact'
 import { faqSection, faqs } from '../../app/data/faq'
 import { hero } from '../../app/data/hero'
 import { menuSections } from '../../app/data/menu'
-import { demoAnchor, isSystemWork, portfolio, screenshotFile, screenshotViews, workSection } from '../../app/data/portfolio'
+import { demoAnchor, isSystemWork, portfolio, pricingSamples, sampleOf, screenshotFile, screenshotViews, workSection } from '../../app/data/portfolio'
 import { allPlans, callToAction, included, launchOffer, launchTerms, planDurations, plans, pricingSection, terms, termsBoxes } from '../../app/data/pricing'
 import { processSection, steps } from '../../app/data/process'
 import { site } from '../../app/data/site'
@@ -229,6 +229,34 @@ describe('portfolio', () => {
       const scores = Object.values(measurement.scores)
       expect(scores).toHaveLength(4)
       for (const score of scores) expect(Number.isInteger(score) && score >= 0 && score <= 100, `${id} score ${score}`).toBe(true)
+    }
+  })
+})
+
+describe('portfolio: the sample link of each package of the price list (design v1.1.0 §3.4)', () => {
+  it('links every package to a piece of work in the portfolio, at that work\'s url', () => {
+    expect(Object.keys(pricingSamples).sort()).toEqual(plans.map(plan => plan.id).sort())
+    for (const plan of plans) {
+      const sample = sampleOf(plan.id)!
+      const work = portfolio.find(item => item.id === sample.workId)
+      expect(work, `${plan.id}: work ${sample.workId}`).toBeDefined()
+      expect(sample.url, plan.id).toBe(work!.url)
+    }
+    expect(sampleOf('no-such-package')).toBeUndefined()
+  })
+
+  it('names the fictional brand in every link, in short phrases that can stay on one line (lesson G-007)', () => {
+    for (const [planId, { link, extra }] of Object.entries(pricingSamples)) {
+      expectThaiText(link, `${planId} link`)
+      if (extra !== undefined) expectThaiText(extra, `${planId} extra`)
+      // brand.md: every sample says that its brand is fictional.
+      expect(joinPhrases(link), `${planId} link`).toContain('แบรนด์สมมติ')
+      // The link is underlined, so its phrases never wrap: a few Thai words, or one Latin word, each.
+      for (const phrase of typeof link === 'string' ? [link] : link) {
+        const thaiLetters = phrase.match(/[฀-๿]/g)?.length ?? 0
+        const latinWords = phrase.match(/[A-Za-z]+/g)?.length ?? 0
+        expect(thaiLetters <= 12 && latinWords <= 1, `${planId}: "${phrase}" is short`).toBe(true)
+      }
     }
   })
 })

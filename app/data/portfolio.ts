@@ -1,4 +1,4 @@
-import type { PortfolioItem, ScreenshotView, SectionHeading, SystemWork } from '../types/content'
+import type { PortfolioItem, ScreenshotView, SectionHeading, SystemWork, WorkSample } from '../types/content'
 
 export const workSection: SectionHeading = {
   heading: 'ผลงาน',
@@ -129,3 +129,32 @@ export function isSystemWork(item: PortfolioItem): item is SystemWork {
 
 /** The id of the panel of the booking system, where the hero's second button leads ('#booking'). */
 export const demoAnchor = 'booking'
+
+/**
+ * The link under each package of the price list (by its id in app/data/pricing.ts) to a piece of work
+ * made that way, and what in that sample costs extra (design v1.1.0 §3.4). The words are the owner's
+ * approved texts N13 / N14 (brand.md). The address is the work's url above, written in one place only.
+ */
+export const pricingSamples: Readonly<Record<string, WorkSample>> = {
+  'landing-page': {
+    workId: 'landing-page',
+    link: ['ดูตัวอย่าง: ', 'BrightPath ', 'Academy ', '(แบรนด์สมมติ)'],
+    extra: ['ฟอร์มขอใบเสนอราคา', 'ในตัวอย่าง ', 'เป็นงานเพิ่ม'],
+  },
+  'multi-page': {
+    workId: 'business-site',
+    link: ['ดูตัวอย่าง: ', 'นวลไพล ', 'นวดไทย ', '& สปา ', '(แบรนด์สมมติ)'],
+    extra: ['2 ภาษาในตัวอย่าง ', 'เป็นงานเพิ่ม'],
+  },
+  'custom-system': {
+    workId: 'booking-system',
+    link: ['ดูตัวอย่าง: ', 'นวลไพล — ', 'ระบบจองคิว ', '(แบรนด์สมมติ)'],
+  },
+}
+
+/** The sample link of a package with the url of its work, or undefined for a package without one. */
+export function sampleOf(planId: string): (WorkSample & { url: string }) | undefined {
+  const sample = pricingSamples[planId]
+  const work = sample && portfolio.find(item => item.id === sample.workId)
+  return sample && work ? { ...sample, url: work.url } : undefined
+}

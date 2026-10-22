@@ -1,11 +1,16 @@
 <script setup lang="ts">
+import { sampleOf } from '~/data/portfolio'
 import { allPlans, callToAction, launchOffer, launchTerms, plans, pricingSection, termsBoxes } from '~/data/pricing'
+import { newTabAttributes } from '~/utils/links'
 import { joinTexts } from '~/utils/phrases'
 
 const { t } = useI18n()
 
 // Every price and term on this section comes from app/data/pricing.ts, word for word.
 const callToActionText = joinTexts([callToAction.ask, callToAction.reply])
+
+// Each package with its sample, if it has one: a link to a piece of work made that way (app/data/portfolio.ts).
+const cards = plans.map(plan => ({ plan, sample: sampleOf(plan.id) }))
 
 /** A price with an amount in it is large; a price that is quoted per job (no number) is a size smaller. */
 const hasAmount = (price: string) => /\d/.test(price)
@@ -37,7 +42,7 @@ const hasAmount = (price: string) => /\d/.test(price)
         class="grid gap-4.5 lg:grid-cols-3"
       >
         <li
-          v-for="plan in plans"
+          v-for="{ plan, sample } in cards"
           :key="plan.id"
           class="flex flex-col items-start gap-2 rounded-lg border-t-6 border-beacon-orange bg-white px-6 pt-6.5 pb-6 shadow-card"
         >
@@ -68,6 +73,34 @@ const hasAmount = (price: string) => /\d/.test(price)
             <span class="sr-only">{{ t('pricing.duration') }}</span>
             <span class="whitespace-nowrap">{{ plan.duration }}</span>
           </p>
+          <!--
+            Under a thin line, a link to a piece of work made as this package, and what in it costs extra
+            (design v1.1.0 §3.4). The link is underlined, so its phrases are inline (`inline`): an underline
+            is not drawn under inline-block boxes (lesson G-007).
+          -->
+          <div
+            v-if="sample"
+            class="mt-3 self-stretch border-t border-harbor-navy/14 pt-3.5"
+          >
+            <a
+              :href="sample.url"
+              v-bind="newTabAttributes(sample.url)"
+              class="inline-block py-2.5 text-[1rem] leading-[1.6] font-medium underline decoration-1 underline-offset-[5px] hover:decoration-beacon-orange hover:decoration-[3px]"
+            ><PhraseText
+              :text="sample.link"
+              inline
+            /><span aria-hidden="true">&nbsp;↗</span><span class="sr-only">{{ t('newTab') }}</span></a>
+            <p
+              v-if="sample.extra"
+              class="mt-0.5 flex items-start gap-2 text-[0.9375rem] text-harbor-navy/78"
+            >
+              <span
+                class="mt-[3px] grid size-4.5 shrink-0 place-items-center rounded-full bg-harbor-navy font-display text-[0.8125rem] leading-none font-semibold text-shore-cream"
+                aria-hidden="true"
+              >+</span>
+              <PhraseText :text="sample.extra" />
+            </p>
+          </div>
         </li>
       </ul>
 
