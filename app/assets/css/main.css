@@ -80,3 +80,16 @@
     outline-color: var(--color-beacon-orange);
   }
 }
+
+/*
+ * A phone on a navy background (the panel of the booking system): a dark 7px bezel with rounded corners,
+ * a thin cream edge that sets it apart from the navy, and a shadow under it. The screen inside has the
+ * inner radius, 23px (rounded-[23px]).
+ */
+@utility phone-frame {
+  overflow: hidden;
+  border: 7px solid var(--color-harbor-navy-deep);
+  border-radius: 30px;
+  background-color: var(--color-harbor-navy-deep);
+  box-shadow: 0 0 0 1px rgb(255 231 209 / 0.3), 0 18px 36px -18px rgb(15 26 53 / 0.9);
+}

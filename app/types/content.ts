@@ -82,6 +82,8 @@ export interface HeroContent {
   services: ThaiText
   /** What kinds of websites it makes. */
   positioning: ThaiText
+  /** The label of the second button, which leads to the panel of the booking system (an arrow follows it). */
+  tryBooking: string
 }
 
 /** app/data/pricing.ts: one package of the price list. */
@@ -143,35 +145,84 @@ export interface PageSpeedScores {
   seo: number
 }
 
-/** The two screenshots of a sample website: on a computer and on a phone. */
-export type ScreenshotView = 'desktop' | 'mobile'
+/**
+ * The screenshots of the work section, each the top of a page in its own window (sizes in
+ * app/data/portfolio.ts, screenshotViews):
+ * - 'desktop' and 'mobile': a sample website on a computer, with the phone one in front of it;
+ * - 'phone': a whole phone screen, as the customer's side of a system is shown in its panel.
+ */
+export type ScreenshotView = 'desktop' | 'mobile' | 'phone'
 
-/** app/data/portfolio.ts: one website shown as Approdo's work. */
-export interface PortfolioItem {
+/** How the PageSpeed Insights scores of a piece of work were measured, and the scores. */
+export interface Measurement {
+  tool: string
+  /** Strategy and runs, e.g. 'มือถือ · ค่ากลาง 5 รอบ'. */
+  method: string
+  /** ISO date of the measurement, e.g. '2026-10-16'. */
+  date: string
+  /** The same date as shown on the page, e.g. '16 ต.ค. 2569'. */
+  dateLabel: string
+  scores: PageSpeedScores
+}
+
+/** What every piece of work in app/data/portfolio.ts has. */
+interface WorkBase {
   id: string
-  /** Name of the (fictional) brand the website was made for. */
-  name: string
+  /** Name of the (fictional) brand the work was made for. */
+  name: ThaiText
   /** The label that says the brand is fictional (brand.md: every sample must say so). */
-  label: string
-  /** Kind of website, e.g. 'เว็บหน้าเดียว (Landing Page) · ภาษาไทย'. */
+  label: ThaiText
+  /** Kind of work, e.g. 'เว็บหน้าเดียว (Landing Page) · ภาษาไทย'. Each part after ' · ' stays on one line. */
   kind: string
-  description: string
+  description: ThaiText
   /** The live website; it opens in a new tab. */
   url: string
-  /**
-   * Alt texts of the two screenshots of the website (made by `npm run capture-portfolio`), which say
-   * that the brand is fictional.
-   */
-  screenshotAlt: Record<ScreenshotView, string>
-  /** How the scores were measured. */
-  measurement: {
-    tool: string
-    /** Strategy and runs, e.g. 'มือถือ · ค่ากลาง 5 รอบ'. */
-    method: string
-    /** ISO date of the measurement, e.g. '2026-10-16'. */
-    date: string
-    /** The same date as shown on the page, e.g. '16 ต.ค. 2569'. */
-    dateLabel: string
-    scores: PageSpeedScores
-  }
+  measurement: Measurement
 }
+
+/** A sample website: a row with its screenshot on a computer and, in front of it, on a phone. */
+export interface WebsiteWork extends WorkBase {
+  /**
+   * Alt texts of the two screenshots (made by `npm run capture-portfolio`), which say that the brand
+   * is fictional.
+   */
+  screenshotAlt: { desktop: string, mobile: string }
+}
+
+/**
+ * A system with a side for customers and a side for the shop (the booking system): a navy panel with
+ * two phones side by side, the customer's side as a screenshot and the shop's side as a short clip, and a
+ * button under each to try that side on the live demo.
+ */
+export interface SystemWork extends WorkBase {
+  /** Alt text of the screenshot of the customer's side (`npm run capture-portfolio`), naming the fictional brand. */
+  screenshotAlt: { phone: string }
+  demo: SystemDemo
+}
+
+/** The two sides of a system's live demo, as its panel shows them. */
+export interface SystemDemo {
+  /** Where the shop's side starts (the back office's login page). The customer's side is the work's `url`. */
+  ownerUrl: string
+  /** The two buttons, to try the demo as a customer and as the shop owner. */
+  tryLabels: { customer: string, owner: string }
+  /** The captions under the two phones. */
+  sides: { customer: string, owner: string }
+  /** The clip of the shop's side, made by `npm run record-clip`: muted, looping, with a play / pause button. */
+  clip: {
+    /** The WebM file, a path in public/. */
+    video: string
+    /** Its first second as a still picture, a path in public/: shown before it plays, and instead of it. */
+    poster: string
+    /** What the clip shows, for screen readers. */
+    label: string
+    /** The button's label while the clip plays, and while it does not. */
+    pause: string
+    play: string
+  }
+  /** How long the data that a visitor tries out on the demo is kept. */
+  trialNote: ThaiText
+}
+
+/** app/data/portfolio.ts: one piece of work shown as Approdo's. */
+export type PortfolioItem = WebsiteWork | SystemWork

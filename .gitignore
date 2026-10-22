@@ -12,6 +12,9 @@ dist
 # Results of `npm run psi`
 psi-results
 
+# Raw recording and log of `npm run record-clip`
+clip-raw
+
 # Node dependencies
 node_modules
 

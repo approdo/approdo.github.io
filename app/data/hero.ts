@@ -8,4 +8,7 @@ export const hero: HeroContent = {
   tagline: ['พาธุรกิจ', 'ขึ้นฝั่งออนไลน์'],
   services: ['ออกแบบและพัฒนาเว็บไซต์ทุกรูปแบบ ', '· รองรับมือถือ โหลดไว'],
   positioning: ['ไม่จำกัดแค่ ', 'Landing Page — ', 'มีเว็บหน้าเดียว ', 'เว็บหลายหน้า ', 'และระบบเฉพาะงาน'],
+  // The owner's approved text N1 "ลองระบบจองคิว ↓" (brand.md): the page adds the arrow, hidden from
+  // screen readers.
+  tryBooking: 'ลองระบบจองคิว',
 }

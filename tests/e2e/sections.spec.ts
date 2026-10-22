@@ -3,11 +3,13 @@ import { expect, test } from '@playwright/test'
 import jsQR from 'jsqr'
 import type { Locator, Page } from '@playwright/test'
 import { faqs } from '../../app/data/faq'
+import { hero as heroData } from '../../app/data/hero'
 import { menuSections } from '../../app/data/menu'
-import { portfolio } from '../../app/data/portfolio'
+import { demoAnchor, portfolio } from '../../app/data/portfolio'
 import { plans, termsBoxes } from '../../app/data/pricing'
 import { steps } from '../../app/data/process'
 import { site } from '../../app/data/site'
+import { joinPhrases } from '../../app/utils/phrases'
 
 // The page: its sections, the LINE links, the header menu and the questions. Texts, counts and links
 // come from app/data/ and the messages file (lesson G-018), so the tests keep passing when content changes.
@@ -196,17 +198,19 @@ for (const viewport of [{ width: 375, height: 812 }, { width: 768, height: 1024 
       expect(stops.map(stop => stop.name)).toEqual([homeLabel, messages.line.chat])
     })
 
-    test('the hero links bring their section below the header; Back keeps the URL under the site path (lesson G-008)', async ({ page }) => {
+    test('the hero links bring their target below the header; Back keeps the URL under the site path (lesson G-008)', async ({ page }) => {
       await openPage(page)
       const pageUrl = page.url()
       const hero = page.locator('#top')
-      for (const [name, section] of [[messages.hero.seeWork, 'work'], [messages.hero.details, 'pricing']] as const) {
+      // The booking system's panel in the work section, then the price list.
+      const targets = [[heroData.tryBooking, `#${demoAnchor}`, `#${demoAnchor}`], [messages.hero.details, '#pricing', '#pricing h2']] as const
+      for (const [name, hash, target] of targets) {
         await hero.getByRole('link', { name }).click()
-        await expect(page).toHaveURL(`${pageUrl}#${section}`)
-        await expectBelowHeader(page, page.locator(`#${section} h2`))
+        await expect(page).toHaveURL(`${pageUrl}${hash}`)
+        await expectBelowHeader(page, page.locator(target))
       }
       await page.goBack()
-      await expect(page).toHaveURL(`${pageUrl}#work`)
+      await expect(page).toHaveURL(`${pageUrl}#${demoAnchor}`)
       expect(new URL(page.url()).pathname).toBe(sitePath)
     })
   })
@@ -260,16 +264,17 @@ function isLoaded(image: Locator) {
   return image.evaluate(img => (img as HTMLImageElement).complete && (img as HTMLImageElement).naturalWidth > 0)
 }
 
-test('every website card has its label once, screenshots that say the brand is fictional, and its scores with tool and date', async ({ page }) => {
+test('every piece of work has its label once, screenshots that say the brand is fictional, and its scores with tool and date', async ({ page }) => {
   await openPage(page)
   await scrollThroughPage(page)
   for (const [index, item] of portfolio.entries()) {
     const card = page.locator('#work article').nth(index)
-    await expect(card.getByText(item.label, { exact: true })).toHaveCount(1)
-    await expect(card.getByRole('heading', { level: 3 })).toHaveText(item.name)
+    await expect(card.locator('p').filter({ hasText: joinPhrases(item.label) })).toHaveCount(1)
+    await expect(card.getByRole('heading', { level: 3 })).toHaveText(joinPhrases(item.name))
 
+    // A website: on a computer and on a phone; the booking system: its customer's side (the shop's side is a clip).
     const images = card.locator('img')
-    await expect(images).toHaveCount(2)
+    await expect(images).toHaveCount(Object.keys(item.screenshotAlt).length)
     for (const image of await images.all()) {
       await expect(image).toHaveAttribute('loading', 'lazy')
       await expect(image).toHaveAttribute('width', /^\d+$/)
@@ -278,7 +283,7 @@ test('every website card has its label once, screenshots that say the brand is f
       expect(await isLoaded(image)).toBe(true)
     }
 
-    const scores = card.locator('figure')
+    const scores = card.locator('figure:has(dl)')
     for (const score of Object.values(item.measurement.scores)) await expect(scores.locator('dd', { hasText: String(score) }).first()).toBeVisible()
     await expect(scores.locator('figcaption')).toContainText(item.measurement.tool)
     await expect(scores.locator('time')).toHaveAttribute('datetime', item.measurement.date)

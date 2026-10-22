@@ -12,7 +12,10 @@ const props = withDefaults(defineProps<{
   variant?: ButtonVariant
   /** 'md' (52px high) in the page, 'sm' (44px) in the header, the questions and the website cards. */
   size?: ButtonSize
-  /** The button sits on a navy background: a primary button turns cream on hover instead of navy. */
+  /**
+   * The button sits on a navy background: a primary button turns cream on hover instead of navy, and an
+   * outline button is cream (lines and text) and fills with cream on hover.
+   */
   onNavy?: boolean
 }>(), {
   href: undefined,
@@ -28,10 +31,14 @@ const sizeClasses: Record<ButtonSize, string> = {
   sm: 'min-h-11 px-5 text-[16px]',
 }
 
-// The orange button has navy text: white on orange is not readable (brand.md). The outline button is
-// used on light backgrounds only.
+// The orange button has navy text: white on orange is not readable (brand.md). The outline button is navy
+// on light backgrounds and cream on navy (the panel of the booking system), 12.82:1 either way.
 const variantClasses = computed(() => {
-  if (props.variant === 'outline') return 'border-harbor-navy bg-transparent text-harbor-navy hover:bg-harbor-navy hover:text-white'
+  if (props.variant === 'outline') {
+    return props.onNavy
+      ? 'border-shore-cream bg-transparent text-shore-cream hover:bg-shore-cream hover:text-harbor-navy'
+      : 'border-harbor-navy bg-transparent text-harbor-navy hover:bg-harbor-navy hover:text-white'
+  }
   const hover = props.onNavy
     ? 'hover:border-shore-cream hover:bg-shore-cream hover:text-harbor-navy'
     : 'hover:border-harbor-navy hover:bg-harbor-navy hover:text-white'

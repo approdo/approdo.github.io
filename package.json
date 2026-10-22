@@ -17,6 +17,7 @@
     "brand-images": "node scripts/generate-brand-images.mjs",
     "qr": "node scripts/generate-line-qr.mjs",
     "capture-portfolio": "node scripts/capture-portfolio.mjs",
+    "record-clip": "node scripts/record-clip.mjs",
     "psi": "node scripts/psi.mjs",
     "check:site-url": "node scripts/check-site-url.mjs",
     "postinstall": "nuxt prepare"

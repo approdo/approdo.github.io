@@ -19,6 +19,14 @@ export function joinPhrases(text: ThaiText): string {
 }
 
 /**
+ * Splits a line written with ' · ' between its parts, such as 'มือถือ · ค่ากลาง 5 รอบ', into its parts.
+ * The page shows each part on one line with its '·' in front, so a '·' never ends a line.
+ */
+export function dotParts(text: string): string[] {
+  return text.split(' · ')
+}
+
+/**
  * Joins several Thai texts into one list of phrases, with `separator` between two texts.
  * The separator goes at the end of a text's last phrase, so the line may break there.
  *

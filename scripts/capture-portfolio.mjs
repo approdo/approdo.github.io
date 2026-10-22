@@ -1,11 +1,16 @@
-// Takes the screenshots of the sample websites shown in the "ผลงาน" section:
+// Takes the screenshots of the work shown in the "ผลงาน" section:
 //
 //   public/images/work/<id>-desktop-<width>.webp   the top of the page in a 1440×900 window
 //   public/images/work/<id>-mobile-<width>.webp    the top of the page in a 375×760 phone window
+//   public/images/work/<id>-phone-<width>.webp     the whole screen of a 390×844 phone
 //
-// The URLs, window sizes and file widths come from app/data/portfolio.ts. Run it with
-// `npm run capture-portfolio` whenever a URL there changes (e.g. after Landing-page moves to the
-// approdo organisation), look at the files and commit them. The script only reads the websites.
+// The URLs, window sizes and file widths come from app/data/portfolio.ts; each piece of work gets the
+// views named in its `screenshotAlt`. Run it with `npm run capture-portfolio` whenever a URL there
+// changes, look at the files and commit them. To take the screenshots of some of the work only, name
+// them: `npm run capture-portfolio -- booking-system`.
+//
+// The script only reads the websites: every request other than GET, HEAD or OPTIONS is aborted, so
+// nothing is written on a live demo (the booking system makes a sandbox only on a first write).
 //
 // It uses the Chromium of the e2e tests (@playwright/test; install it once with
 // `npx playwright install chromium`). Animations are turned off (reduced motion), so counters and
@@ -39,19 +44,36 @@ async function toWebpFiles(page, png, widths) {
   }, { dataUrl: `data:image/png;base64,${png.toString('base64')}`, widths, quality: WEBP_QUALITY })
 }
 
+// The work named on the command line, or all of it.
+const ids = process.argv.slice(2)
+const unknown = ids.filter(id => !portfolio.some(item => item.id === id))
+if (unknown.length > 0) throw new Error(`No work with the id ${unknown.join(', ')} in app/data/portfolio.ts`)
+const items = ids.length > 0 ? portfolio.filter(item => ids.includes(item.id)) : portfolio
+
+const READ_ONLY_METHODS = ['GET', 'HEAD', 'OPTIONS']
+
 const browser = await chromium.launch()
 try {
   const encoder = await browser.newPage()
   await mkdir(new URL('work/', imagesDir), { recursive: true })
 
-  for (const item of portfolio) {
-    for (const [view, { width, height, files }] of Object.entries(screenshotViews)) {
+  for (const item of items) {
+    for (const view of Object.keys(item.screenshotAlt)) {
+      const { width, height, files } = screenshotViews[view]
+      const isPhone = view !== 'desktop'
       const context = await browser.newContext({
         viewport: { width, height },
         deviceScaleFactor: 1,
-        isMobile: view === 'mobile',
-        hasTouch: view === 'mobile',
+        isMobile: isPhone,
+        hasTouch: isPhone,
         reducedMotion: 'reduce',
+      })
+      const blocked = []
+      await context.route('**/*', (route) => {
+        const request = route.request()
+        if (READ_ONLY_METHODS.includes(request.method())) return route.continue()
+        blocked.push(`${request.method()} ${request.url()}`)
+        return route.abort()
       })
       const page = await context.newPage()
       const response = await page.goto(item.url, { waitUntil: 'networkidle' })
@@ -64,6 +86,7 @@ try {
       await page.waitForTimeout(800)
       const png = await page.screenshot({ type: 'png' })
       await context.close()
+      if (blocked.length > 0) console.log(`${item.url} (${view}): blocked ${blocked.join(', ')}`)
 
       const encoded = await toWebpFiles(encoder, png, files)
       for (const [index, fileWidth] of files.entries()) {

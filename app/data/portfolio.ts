@@ -1,4 +1,4 @@
-import type { PortfolioItem, ScreenshotView, SectionHeading } from '../types/content'
+import type { PortfolioItem, ScreenshotView, SectionHeading, SystemWork } from '../types/content'
 
 export const workSection: SectionHeading = {
   heading: 'ผลงาน',
@@ -7,13 +7,15 @@ export const workSection: SectionHeading = {
 }
 
 /**
- * The screenshots of every website in public/images/work/, made by `npm run capture-portfolio`
- * (scripts/capture-portfolio.mjs) from its live URL: the window size of each view, and the widths of
- * the WebP files written for it (the page picks one with srcset).
+ * The screenshots in public/images/work/, made by `npm run capture-portfolio`
+ * (scripts/capture-portfolio.mjs) from the live URL of each piece of work: the window size of each view,
+ * and the widths of the WebP files written for it (the page picks one with srcset). A piece of work has
+ * the views named in its `screenshotAlt`.
  */
 export const screenshotViews: Record<ScreenshotView, { width: number, height: number, files: readonly number[] }> = {
   desktop: { width: 1440, height: 900, files: [720, 1440] },
   mobile: { width: 375, height: 760, files: [375] },
+  phone: { width: 390, height: 844, files: [260, 390] },
 }
 
 /** Path inside public/images/ of one screenshot file: screenshotFile('landing-page', 'desktop', 720). */
@@ -21,15 +23,22 @@ export function screenshotFile(id: string, view: ScreenshotView, width: number):
   return `work/${id}-${view}-${width}.webp`
 }
 
-/** Every sample website was made for a fictional brand, and says so (brand.md "## กฎ"). */
-const SAMPLE_LABEL = 'ผลงานตัวอย่าง (แบรนด์สมมติ)'
+/**
+ * Every piece of work was made for a fictional brand, and says so (brand.md "## กฎ"). Two phrases, so
+ * the words in brackets never break in the narrow navy panel (decision D-028).
+ */
+const SAMPLE_LABEL = ['ผลงานตัวอย่าง ', '(แบรนด์สมมติ)']
 
 /**
- * Approdo's work so far: two sample websites (brand-site decision D-004). Keep this file free of
- * runtime imports: the screenshot script reads the URLs from it in plain Node.
+ * Approdo's work so far, in the order of the page: the booking system first (decision D-015), then two
+ * sample websites (decision D-004). The words of the booking system are the owner's, word for word
+ * (brand.md "ข้อความบนเว็บที่เจ้าของเขียน (v1.1.0)" and the approved texts N3–N5 under it). Keep this
+ * file free of runtime imports: the screenshot and clip scripts read it in plain Node.
  *
  * The scores are the medians of PageSpeed Insights mobile (lab) runs, read from the raw results in the
  * story repository:
+ * - Booking-system: Demo-story/Booking-system/evidence/BK-012/psi/summary.json and run-1 – run-3.json.gz
+ *   (3 runs, Performance 91 / 92 / 92, Lighthouse 13.5.0)
  * - Landing-page: Demo-story/Landing-page/evidence/LP-022/psi-v1.1/runs.md and run-1.json – run-5.json
  *   (5 runs, Performance 99 / 97 / 99 / 99 / 99, Lighthouse 13.5.0)
  * - Business-site: Demo-story/Business-site/evidence/BS-006/psi/runs.md and run-1.json – run-3.json
@@ -41,6 +50,38 @@ const SAMPLE_LABEL = 'ผลงานตัวอย่าง (แบรนด�
  * show it.
  */
 export const portfolio: PortfolioItem[] = [
+  {
+    id: 'booking-system',
+    name: ['นวลไพล — ', 'ระบบจองคิว'],
+    label: SAMPLE_LABEL,
+    kind: 'ระบบเฉพาะงาน · จองคิว + หลังบ้าน',
+    description: ['ลูกค้าเลือกบริการ ', 'หมอนวด ', 'และเวลาที่ว่างเอง ', 'ร้านดูคิว ', 'ยืนยัน ', 'และพักบริการ', 'ได้จากมือถือ'],
+    url: 'https://approdo.github.io/Booking-system/',
+    screenshotAlt: {
+      phone: 'ภาพหน้าจอระบบจองคิวนวลไพล (แบรนด์สมมติ) ฝั่งลูกค้าบนมือถือ',
+    },
+    demo: {
+      ownerUrl: 'https://approdo.github.io/Booking-system/admin/login/',
+      tryLabels: { customer: 'ลองจองแบบลูกค้า', owner: 'ลองเป็นเจ้าของร้าน' },
+      sides: { customer: 'ฝั่งลูกค้า', owner: 'ฝั่งร้าน' },
+      clip: {
+        video: 'videos/booking-system-owner.webm',
+        poster: 'images/work/booking-system-owner-poster-300.webp',
+        label: 'คลิปหลังบ้านระบบจองคิวนวลไพล (แบรนด์สมมติ) บนมือถือ: ยืนยันคิว แล้วพักบริการ',
+        pause: 'หยุดคลิป',
+        play: 'เล่นคลิป',
+      },
+      // The demo keeps what a visitor tries for 24 hours, then deletes it (decision D-019).
+      trialNote: ['ข้อมูลที่ลอง', 'ใช้ได้ 24 ชั่วโมง ', 'แล้วระบบลบทิ้งเอง'],
+    },
+    measurement: {
+      tool: 'PageSpeed Insights',
+      method: 'มือถือ · ค่ากลาง 3 รอบ',
+      date: '2026-10-18',
+      dateLabel: '18 ต.ค. 2569',
+      scores: { performance: 92, accessibility: 100, bestPractices: 100, seo: 100 },
+    },
+  },
   {
     id: 'landing-page',
     name: 'BrightPath Academy',
@@ -80,3 +121,11 @@ export const portfolio: PortfolioItem[] = [
     },
   },
 ]
+
+/** The work shown as a navy panel with its live demo: the booking system. */
+export function isSystemWork(item: PortfolioItem): item is SystemWork {
+  return 'demo' in item
+}
+
+/** The id of the panel of the booking system, where the hero's second button leads ('#booking'). */
+export const demoAnchor = 'booking'

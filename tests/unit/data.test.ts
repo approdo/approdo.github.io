@@ -1,10 +1,10 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, statSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { contactSection, onlyChannel } from '../../app/data/contact'
 import { faqSection, faqs } from '../../app/data/faq'
 import { hero } from '../../app/data/hero'
 import { menuSections } from '../../app/data/menu'
-import { portfolio, screenshotFile, screenshotViews, workSection } from '../../app/data/portfolio'
+import { demoAnchor, isSystemWork, portfolio, screenshotFile, screenshotViews, workSection } from '../../app/data/portfolio'
 import { allPlans, callToAction, included, launchOffer, launchTerms, planDurations, plans, pricingSection, terms, termsBoxes } from '../../app/data/pricing'
 import { processSection, steps } from '../../app/data/process'
 import { site } from '../../app/data/site'
@@ -81,11 +81,12 @@ describe('section headings', () => {
 })
 
 describe('hero', () => {
-  it('has the tagline on one or more lines, the services line and the positioning', () => {
+  it('has the tagline on one or more lines, the services line, the positioning and the label of the way to the booking system', () => {
     expect(hero.tagline.length).toBeGreaterThan(0)
     hero.tagline.forEach((line, index) => expectThaiText(line, `tagline line ${index + 1}`))
     expectThaiText(hero.services, 'services')
     expectThaiText(hero.positioning, 'positioning')
+    expectThaiText(hero.tryBooking, 'tryBooking')
   })
 })
 
@@ -179,12 +180,12 @@ describe('faq', () => {
 })
 
 describe('portfolio', () => {
-  it('has websites with unique ids, texts, an https link and the label that the brand is fictional', () => {
+  it('has work with unique ids, texts, an https link and the label that the brand is fictional', () => {
     expectUniqueIds(portfolio, 'portfolio')
     for (const item of portfolio) {
       for (const field of ['name', 'label', 'kind', 'description'] as const) expectThaiText(item[field], `${item.id} ${field}`)
-      // brand.md: every sample website says that its brand is fictional.
-      expect(item.label, `${item.id} label`).toContain('แบรนด์สมมติ')
+      // brand.md: every sample says that its brand is fictional.
+      expect(joinPhrases(item.label), `${item.id} label`).toContain('แบรนด์สมมติ')
       expect(new URL(item.url).protocol, `${item.id} url`).toBe('https:')
       expect(item.url.endsWith('/'), `${item.id} url ends with '/'`).toBe(true)
     }
@@ -201,12 +202,13 @@ describe('portfolio', () => {
     }
   })
 
-  it('has both screenshots of every website as WebP files at the widths in screenshotViews (npm run capture-portfolio)', () => {
+  it('has the screenshots of every piece of work as WebP files at the widths in screenshotViews (npm run capture-portfolio)', () => {
     for (const item of portfolio) {
-      for (const [view, { width, height, files }] of Object.entries(screenshotViews) as [ScreenshotView, typeof screenshotViews.desktop][]) {
+      for (const [view, alt] of Object.entries(item.screenshotAlt) as [ScreenshotView, string][]) {
+        const { width, height, files } = screenshotViews[view]
         // brand.md: the alt text says that the brand is fictional too.
-        expectThaiText(item.screenshotAlt[view], `${item.id} ${view} alt`)
-        expect(item.screenshotAlt[view], `${item.id} ${view} alt`).toContain('แบรนด์สมมติ')
+        expectThaiText(alt, `${item.id} ${view} alt`)
+        expect(alt, `${item.id} ${view} alt`).toContain('แบรนด์สมมติ')
         expect(files.length, `${view} files`).toBeGreaterThan(0)
         for (const fileWidth of files) {
           const file = readFileSync(new URL(`../../public/images/${screenshotFile(item.id, view, fileWidth)}`, import.meta.url))
@@ -227,6 +229,59 @@ describe('portfolio', () => {
       const scores = Object.values(measurement.scores)
       expect(scores).toHaveLength(4)
       for (const score of scores) expect(Number.isInteger(score) && score >= 0 && score <= 100, `${id} score ${score}`).toBe(true)
+    }
+  })
+})
+
+describe('portfolio: the work with a live demo (the navy panel)', () => {
+  const systems = portfolio.filter(isSystemWork)
+  const publicFile = (path: string) => new URL(`../../public/${path}`, import.meta.url)
+
+  it('is one piece of work, the first of the list: the hero\'s second button leads to its panel (decision D-015)', () => {
+    expect(systems).toHaveLength(1)
+    expect(portfolio[0]).toBe(systems[0])
+    expect(demoAnchor).toMatch(KEBAB_CASE)
+  })
+
+  it('has the shop\'s side on the same demo as the customer\'s side, and texts for both sides', () => {
+    for (const { id, url, demo } of systems) {
+      const owner = new URL(demo.ownerUrl)
+      expect(owner.protocol, `${id} ownerUrl`).toBe('https:')
+      expect(demo.ownerUrl.startsWith(url) && demo.ownerUrl !== url, `${id}: ${demo.ownerUrl} is a page of ${url}`).toBe(true)
+      for (const side of ['customer', 'owner'] as const) {
+        expectThaiText(demo.tryLabels[side], `${id} tryLabels.${side}`)
+        expectThaiText(demo.sides[side], `${id} sides.${side}`)
+      }
+      expectThaiText(demo.trialNote, `${id} trialNote`)
+      for (const field of ['label', 'pause', 'play'] as const) expectThaiText(demo.clip[field], `${id} clip.${field}`)
+      // brand.md: what the clip shows names the fictional brand, as the alt text of a screenshot does.
+      expect(demo.clip.label, `${id} clip.label`).toContain('แบรนด์สมมติ')
+      expect(demo.clip.pause, `${id}: the two labels of the clip's button differ`).not.toBe(demo.clip.play)
+    }
+  })
+
+  it('has its clip as a silent WebM file (VP8) of at most 2 MB, made by npm run record-clip (decision D-016)', () => {
+    for (const { id, demo } of systems) {
+      expect(demo.clip.video, `${id} clip`).toMatch(/\.webm$/)
+      const file = readFileSync(publicFile(demo.clip.video))
+      expect(file.length, `${id} clip bytes`).toBeLessThanOrEqual(2 * 1024 * 1024)
+      // A WebM (Matroska) file: its EBML header, its doc type, a VP8 video track and no sound track.
+      expect(file.readUInt32BE(0).toString(16), `${id} EBML header`).toBe('1a45dfa3')
+      expect(file.includes('webm'), `${id} doc type`).toBe(true)
+      expect(file.includes('V_VP8'), `${id} VP8 track`).toBe(true)
+      for (const audio of ['A_OPUS', 'A_VORBIS', 'A_AAC', 'A_MPEG']) expect(file.includes(audio), `${id} has no ${audio} track`).toBe(false)
+    }
+  })
+
+  it('has a small WebP poster of the clip, at most 300px wide in the shape of the phone screen (decision D-021)', () => {
+    const { width, height } = screenshotViews.phone
+    for (const { id, demo } of systems) {
+      expect(demo.clip.poster, `${id} poster`).toMatch(/\.webp$/)
+      const file = readFileSync(publicFile(demo.clip.poster))
+      const size = webpSize(file)
+      expect(size.width, `${id} poster width`).toBeLessThanOrEqual(300)
+      expect(size.height, `${id} poster height`).toBe(Math.round(height * size.width / width))
+      expect(statSync(publicFile(demo.clip.poster)).size, `${id} poster bytes`).toBeLessThanOrEqual(25 * 1024)
     }
   })
 })

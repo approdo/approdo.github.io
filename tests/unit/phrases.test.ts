@@ -3,7 +3,7 @@ import { createSSRApp, h } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import PhraseText from '../../app/components/PhraseText'
 import type { ThaiText } from '../../app/types/content'
-import { joinPhrases, joinTexts, toPhraseParts } from '../../app/utils/phrases'
+import { dotParts, joinPhrases, joinTexts, toPhraseParts } from '../../app/utils/phrases'
 
 // A space after 'บริการครบ', none between the other phrases.
 const heading = ['ร้านเล็ก', 'ใกล้บ้าน ', 'บริการครบ', 'ในที่เดียว']
@@ -39,6 +39,18 @@ describe('joinPhrases', () => {
     expect(joinPhrases(['A', 'B'])).toBe('AB')
     expect(joinPhrases('ข้อความ ธรรมดา')).toBe('ข้อความ ธรรมดา')
     expect(joinPhrases([])).toBe('')
+  })
+})
+
+describe('dotParts', () => {
+  it('splits a line at each " · " and keeps every other space in its part', () => {
+    expect(dotParts('ระบบเฉพาะงาน · จองคิว + หลังบ้าน')).toEqual(['ระบบเฉพาะงาน', 'จองคิว + หลังบ้าน'])
+    expect(dotParts('a · b · c')).toEqual(['a', 'b', 'c'])
+  })
+
+  it('returns a line without " · " as one part', () => {
+    expect(dotParts('มือถือ')).toEqual(['มือถือ'])
+    expect(dotParts('a·b')).toEqual(['a·b'])
   })
 })
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { hero } from '~/data/hero'
+import { demoAnchor } from '~/data/portfolio'
 import { included, launchOffer, plans } from '~/data/pricing'
 import { site } from '~/data/site'
 
@@ -64,13 +65,20 @@ const hasAmount = (price: string) => /\d/.test(price)
         <p class="mt-2 text-harbor-navy/78">
           <PhraseText :text="hero.positioning" />
         </p>
-        <div class="mt-7 flex flex-wrap gap-3">
-          <LineButton>{{ t('line.chat') }}</LineButton>
+        <!--
+          LINE, and the way to the booking system's panel in the work section. Below 640px the two buttons
+          are narrower and closer, so they keep one row from 360px and the hero keeps its height.
+        -->
+        <div class="mt-7 flex flex-wrap gap-2 sm:gap-3">
+          <LineButton class="max-sm:px-4">
+            {{ t('line.chat') }}
+          </LineButton>
           <BaseButton
-            href="#work"
+            :href="`#${demoAnchor}`"
             variant="outline"
+            class="max-sm:px-4"
           >
-            {{ t('hero.seeWork') }}
+            {{ hero.tryBooking }}<span aria-hidden="true">&nbsp;↓</span>
           </BaseButton>
         </div>
       </div>
