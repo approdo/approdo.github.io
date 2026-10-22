@@ -396,30 +396,71 @@ for (const width of [320, 1024, 1440]) {
   })
 }
 
-for (const width of [320, 360, 375]) {
-  test(`at ${width}px every score's number and name stay inside its cell (AC15)`, async ({ page }) => {
+// Where the scores turn from two rows of two into one row of four (WorkScores.vue: 25rem on a website's
+// card, 40rem in the booking system's panel), in px at the browser's default text size.
+const scoresInOneRowFrom = { website: 400, panel: 640 }
+
+// Chromium on Linux (the CI) draws the score names about 9px wider than on Windows, so they are measured at
+// every width from 320 to 480px, which takes in the website cards' switch and 1px either side of it, and
+// at three wider windows (decision D-032).
+const scoreWidths = [...Array.from({ length: 161 }, (_, index) => 320 + index), 768, 1024, 1440]
+
+// How far a score's name and number stay inside the lines of their cell, at the least.
+const MIN_GAP_TO_CELL_LINES = 2
+
+test('at every width from 320 to 480px and at 768, 1024 and 1440px the scores are in two rows of two or one row of four as planned, and every name and number stays 2px inside its cell (AC15, AC18)', async ({ page }) => {
+  await openPage(page)
+  await page.evaluate(() => document.fonts.ready)
+
+  // Control: the names are drawn with the site's own Outfit, not with a font of the system.
+  const client = await page.context().newCDPSession(page)
+  await client.send('DOM.enable')
+  await client.send('CSS.enable')
+  const { root } = await client.send('DOM.getDocument', { depth: -1 })
+  const { nodeIds } = await client.send('DOM.querySelectorAll', { nodeId: root.nodeId, selector: '#work dl dt' })
+  expect(nodeIds).toHaveLength(4 * portfolio.length)
+  for (const nodeId of nodeIds) {
+    const { fonts } = await client.send('CSS.getPlatformFontsForNode', { nodeId })
+    expect(fonts.map(font => ({ outfit: font.familyName.startsWith('Outfit'), webFont: font.isCustomFont }))).toEqual([{ outfit: true, webFont: true }])
+  }
+
+  const problems: string[] = []
+  for (const width of scoreWidths) {
     await page.setViewportSize({ width, height: 900 })
-    await openPage(page)
-    await page.evaluate(() => document.fonts.ready)
-    const cells = page.locator('#work dl > div')
-    // Control: four scores per piece of work.
-    await expect(cells).toHaveCount(4 * portfolio.length)
-    const outside = await cells.evaluateAll(list => list.flatMap((cell) => {
-      const style = getComputedStyle(cell)
-      const box = cell.getBoundingClientRect()
-      const left = box.left + Number.parseFloat(style.borderLeftWidth)
-      const right = box.right - Number.parseFloat(style.borderRightWidth)
-      return [...cell.querySelectorAll('dt, dd')].flatMap((text) => {
-        const range = document.createRange()
-        range.selectNodeContents(text)
-        const rects = [...range.getClientRects()].filter(rect => rect.width > 0)
-        const past = Math.max(...rects.map(rect => Math.max(left - rect.left, rect.right - right)))
-        return past > 0.5 ? [`${text.textContent!.trim()} +${past.toFixed(1)}px`] : []
+    const blocks = await page.locator('#work dl').evaluateAll((lists, panelId) => lists.map((list) => {
+      const cells = [...list.children].map((cell) => {
+        const style = getComputedStyle(cell)
+        const box = cell.getBoundingClientRect()
+        const left = box.left + Number.parseFloat(style.borderLeftWidth)
+        const right = box.right - Number.parseFloat(style.borderRightWidth)
+        const gaps = [...cell.querySelectorAll('dt, dd')].flatMap((text) => {
+          const range = document.createRange()
+          range.selectNodeContents(text)
+          return [...range.getClientRects()].filter(rect => rect.width > 0).flatMap(rect => [rect.left - left, right - rect.right])
+        })
+        return { name: cell.querySelector('dt')!.textContent!.trim(), gap: Math.min(...gaps) }
       })
-    }))
-    expect(outside).toEqual([])
-  })
-}
+      return {
+        inPanel: list.closest(`#${panelId}`) !== null,
+        columns: getComputedStyle(list).gridTemplateColumns.split(' ').length,
+        cells,
+      }
+    }), demoAnchor)
+
+    // Control: one block of four scores per piece of work, in the order of the data.
+    expect(blocks.map(block => block.inPanel), `${width}px`).toEqual(portfolio.map(item => isSystemWork(item)))
+    for (const [index, block] of blocks.entries()) {
+      const work = `${width}px ${portfolio[index]!.id}`
+      expect(block.cells, work).toHaveLength(4)
+      const columns = width >= (block.inPanel ? scoresInOneRowFrom.panel : scoresInOneRowFrom.website) ? 4 : 2
+      if (block.columns !== columns) problems.push(`${work}: ${block.columns} columns, not ${columns}`)
+      for (const cell of block.cells) {
+        if (cell.gap < MIN_GAP_TO_CELL_LINES) problems.push(`${work} ${cell.name}: ${cell.gap.toFixed(2)}px inside its cell`)
+      }
+    }
+  }
+  expect(problems).toEqual([])
+})
 
 test.describe('a phone at 375px with 2 device pixels per CSS pixel', () => {
   test.use({ viewport: { width: 375, height: 812 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true })

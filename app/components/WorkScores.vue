@@ -4,9 +4,16 @@ import { dotParts } from '~/utils/phrases'
 
 /**
  * The four PageSpeed Insights scores of a piece of work, captioned with the tool, how they were measured
- * and when. Where four score names do not fit side by side, the scores are two rows of two: below 360px on
- * a website's card, below 640px in the narrower navy panel of the booking system. With `onNavy` (that
- * panel) the lines and the text are light, and the sizes follow the visitor's text size (rem).
+ * and when. Where four score names do not fit side by side, the scores are two rows of two: below 25rem
+ * (400px) on a website's card, below 40rem (640px) in the narrower navy panel of the booking system. With
+ * `onNavy` (that panel) the lines and the text are light, and the sizes follow the visitor's text size (rem).
+ *
+ * The widths leave room for Linux, where Chromium sets each letter of these 12px names on whole pixels,
+ * mostly wider than the font's own widths: 'Performance' takes 81px there and 72px on Windows. From 25rem
+ * every name of a website's card stays more than 4px inside its cell on both (decision D-032). In a row of
+ * four the columns share the width equally, but none gets narrower than its longest word: that changes
+ * nothing where the names fit, and on Linux it widens the panel's first column by a few pixels from
+ * 1024px, where the panel's text column is as narrow as a website's card on a 380px phone.
  */
 const props = withDefaults(defineProps<{
   measurement: Measurement
@@ -22,7 +29,7 @@ const scoreNames: (keyof PageSpeedScores)[] = ['performance', 'accessibility', '
 
 const styles = computed(() => props.onNavy
   ? {
-      list: 'grid-cols-2 border-shore-cream/30 sm:grid-cols-4',
+      list: 'grid-cols-2 border-shore-cream/30 sm:grid-cols-[repeat(4,minmax(min-content,1fr))]',
       // In two rows of two: no line left of the first score of a row, a line above the second row.
       score: 'border-shore-cream/30 max-sm:odd:border-l-0 max-sm:[&:nth-child(n+3)]:border-t',
       name: 'text-[0.75rem] text-shore-cream',
@@ -30,8 +37,8 @@ const styles = computed(() => props.onNavy
       caption: 'text-[0.875rem] text-shore-cream',
     }
   : {
-      list: 'grid-cols-2 border-harbor-navy/14 min-[360px]:grid-cols-4',
-      score: 'border-harbor-navy/14 max-[360px]:odd:border-l-0 max-[360px]:[&:nth-child(n+3)]:border-t',
+      list: 'grid-cols-2 border-harbor-navy/14 min-[25rem]:grid-cols-[repeat(4,minmax(min-content,1fr))]',
+      score: 'border-harbor-navy/14 max-[25rem]:odd:border-l-0 max-[25rem]:[&:nth-child(n+3)]:border-t',
       name: 'text-[12px] text-harbor-navy/78',
       number: 'text-[30px]',
       caption: 'text-[14px] text-harbor-navy/78',
